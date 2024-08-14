@@ -35,21 +35,21 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * The dependencies used by LuckPerms.
+ * The dependencies used by CustomNameplates.
  */
 public enum Dependency {
 
     ASM(
             "org.ow2.asm",
             "asm",
-            "9.1",
+            "9.7",
             null,
             "asm"
     ),
     ASM_COMMONS(
             "org.ow2.asm",
             "asm-commons",
-            "9.1",
+            "9.7",
             null,
             "asm-commons"
     ),
@@ -60,114 +60,26 @@ public enum Dependency {
             null,
             "jar-relocator"
     ),
-    KYORI_OPTION(
-            "net{}kyori",
-            "option",
-            "1.0.0",
-            null,
-            "kyori-option",
-            Relocation.of("option", "net{}kyori{}option")
-    ),
-    ADVENTURE_API(
-            "net{}kyori",
-            "adventure-api",
-            "4.15.0",
-            null,
-            "adventure-api",
-            Relocation.of("adventure", "net{}kyori{}adventure")
-    ),
-    ADVENTURE_KEY(
-            "net{}kyori",
-            "adventure-key",
-            "4.15.0",
-            null,
-            "adventure-key",
-            Relocation.of("adventure", "net{}kyori{}adventure")
-    ),
-    ADVENTURE_NBT(
-            "net{}kyori",
-            "adventure-nbt",
-            "4.15.0",
-            null,
-            "adventure-nbt",
-            Relocation.of("adventure", "net{}kyori{}adventure")
-    ),
-    ADVENTURE_LEGACY_SERIALIZER(
-            "net{}kyori",
-            "adventure-text-serializer-legacy",
-            "4.15.0",
-            null,
-            "adventure-text-serializer-legacy",
-            Relocation.of("adventure", "net{}kyori{}adventure")
-    ),
-    ADVENTURE_TEXT_LOGGER(
-            "net{}kyori",
-            "adventure-text-logger-slf4j",
-            "4.15.0",
-            null,
-            "adventure-text-logger-slf4j",
-            Relocation.of("adventure", "net{}kyori{}adventure")
-    ),
-    ADVENTURE_GSON(
-            "net{}kyori",
-            "adventure-text-serializer-gson",
-            "4.15.0",
-            null,
-            "adventure-text-serializer-gson",
-            Relocation.of("adventure", "net{}kyori{}adventure")
-    ),
-    ADVENTURE_GSON_LEGACY(
-            "net{}kyori",
-            "adventure-text-serializer-gson-legacy-impl",
-            "4.15.0",
-            null,
-            "adventure-text-serializer-gson-legacy-impl",
-            Relocation.of("adventure", "net{}kyori{}adventure")
-    ),
-    ADVENTURE_PLATFORM(
-            "net{}kyori",
-            "adventure-platform-api",
-            "4.3.2",
-            null,
-            "adventure-platform-api",
-            Relocation.of("adventure", "net{}kyori{}adventure")
-    ),
-    ADVENTURE_PLATFORM_BUKKIT(
-            "net{}kyori",
-            "adventure-platform-bukkit",
-            "4.3.2",
-            null,
-            "adventure-platform-bukkit",
-            Relocation.of("adventure", "net{}kyori{}adventure")
-    ),
-    ADVENTURE_PLATFORM_FACET(
-            "net{}kyori",
-            "adventure-platform-facet",
-            "4.3.2",
-            null,
-            "adventure-platform-facet",
-            Relocation.of("adventure", "net{}kyori{}adventure")
-    ),
-    ADVENTURE_TEXT_MINIMESSAGE(
-            "net{}kyori",
-            "adventure-text-minimessage",
-            "4.15.0",
-            null,
-            "adventure-text-minimessage",
-            Relocation.of("adventure", "net{}kyori{}adventure")
-    ),
     COMMAND_API(
             "dev{}jorel",
             "commandapi-bukkit-shade",
-            "9.3.0",
+            "9.5.3",
             null,
             "commandapi-bukkit",
+            Relocation.of("commandapi", "dev{}jorel{}commandapi")
+    ),
+    COMMAND_API_MOJMAP(
+            "dev{}jorel",
+            "commandapi-bukkit-shade-mojang-mapped",
+            "9.5.3",
+            null,
+            "commandapi-bukkit-mojang-mapped",
             Relocation.of("commandapi", "dev{}jorel{}commandapi")
     ),
     MARIADB_DRIVER(
             "org{}mariadb{}jdbc",
             "mariadb-java-client",
-            "3.3.2",
+            "3.3.3",
             null,
             "mariadb-java-client",
             Relocation.of("mariadb", "org{}mariadb")
@@ -175,7 +87,7 @@ public enum Dependency {
     BOOSTED_YAML(
             "dev{}dejvokep",
             "boosted-yaml",
-            "1.3.2",
+            "1.3.6",
             null,
             "boosted-yaml",
             Relocation.of("boostedyaml", "dev{}dejvokep{}boostedyaml")
@@ -183,7 +95,7 @@ public enum Dependency {
     MYSQL_DRIVER(
             "com{}mysql",
             "mysql-connector-j",
-            "8.3.0",
+            "9.0.0",
             null,
             "mysql-connector-j",
             Relocation.of("mysql", "com{}mysql")
@@ -198,14 +110,14 @@ public enum Dependency {
     SQLITE_DRIVER(
             "org.xerial",
             "sqlite-jdbc",
-            "3.45.1.0",
+            "3.46.0.1",
             null,
             "sqlite-jdbc"
     ),
     HIKARI(
             "com{}zaxxer",
             "HikariCP",
-            "5.0.1",
+            "5.1.0",
             null,
             "HikariCP",
             Relocation.of("hikari", "com{}zaxxer{}hikari")
@@ -227,7 +139,7 @@ public enum Dependency {
     MONGODB_DRIVER_CORE(
             "org{}mongodb",
             "mongodb-driver-core",
-            "4.11.1",
+            "5.1.0",
             null,
             "mongodb-driver-core",
             Relocation.of("mongodb", "com{}mongodb"),
@@ -236,7 +148,7 @@ public enum Dependency {
     MONGODB_DRIVER_SYNC(
             "org{}mongodb",
             "mongodb-driver-sync",
-            "4.11.1",
+            "5.1.0",
             null,
             "mongodb-driver-sync",
             Relocation.of("mongodb", "com{}mongodb"),
@@ -245,7 +157,7 @@ public enum Dependency {
     MONGODB_DRIVER_BSON(
             "org{}mongodb",
             "bson",
-            "4.11.1",
+            "5.1.0",
             null,
             "mongodb-bson",
             Relocation.of("mongodb", "com{}mongodb"),
@@ -254,7 +166,7 @@ public enum Dependency {
     JEDIS(
             "redis{}clients",
             "jedis",
-            "5.1.0",
+            "5.1.2",
             null,
             "jedis",
             Relocation.of("jedis", "redis{}clients{}jedis"),
@@ -290,14 +202,6 @@ public enum Dependency {
             "2.10.1",
             null,
             "gson"
-    ),
-    BIOME_API(
-            "com{}github{}Xiao-MoMi",
-            "BiomeAPI",
-            "0.2",
-            "jitpack",
-            "biome-api",
-            Relocation.of("biomeapi", "net{}momirealms{}biomeapi")
     );
 
     private final String mavenRepoPath;

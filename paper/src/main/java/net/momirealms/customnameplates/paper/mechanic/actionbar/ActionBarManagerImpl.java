@@ -24,17 +24,18 @@ import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.momirealms.customnameplates.api.CustomNameplatesPlugin;
 import net.momirealms.customnameplates.api.manager.ActionBarManager;
 import net.momirealms.customnameplates.api.util.LogUtils;
-import net.momirealms.customnameplates.paper.adventure.AdventureManagerImpl;
 import net.momirealms.customnameplates.paper.mechanic.actionbar.listener.ActionBarListener;
 import net.momirealms.customnameplates.paper.mechanic.actionbar.listener.ChatMessageListener;
 import net.momirealms.customnameplates.paper.mechanic.actionbar.listener.SystemChatListener;
 import net.momirealms.customnameplates.paper.mechanic.misc.DisplayController;
 import net.momirealms.customnameplates.paper.setting.CNConfig;
 import net.momirealms.customnameplates.paper.util.ConfigUtils;
+import net.momirealms.customnameplates.paper.util.ReflectionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -60,11 +61,15 @@ public class ActionBarManagerImpl implements ActionBarManager, Listener {
     private ActionBarConfig config;
     private ChatMessageListener chatMessageListener;
     private SystemChatListener systemChatListener;
+    private final MiniMessage miniMessage;
 
     public ActionBarManagerImpl(CustomNameplatesPlugin plugin) {
         this.receiverMap = new ConcurrentHashMap<>();
         this.plugin = plugin;
         this.actionBarListener = new ActionBarListener(this);
+        this.miniMessage = MiniMessage.builder()
+                .strict(true)
+                .build();
         if (plugin.getVersionManager().isVersionNewerThan1_19()) {
             this.systemChatListener = new SystemChatListener(this);
         } else {
@@ -176,13 +181,23 @@ public class ActionBarManagerImpl implements ActionBarManager, Listener {
             if (receiver != null) {
                 event.setCancelled(true);
                 String json = packet.getStrings().readSafely(0);
-                if (json != null && !json.equals("")) {
+                if (json != null && !json.isEmpty()) {
                     Component component = GsonComponentSerializer.gson().deserialize(json);
                     if (component instanceof TranslatableComponent) {
                         // We can't get TranslatableComponent's width :(
                         return;
                     }
-                    receiver.setOtherPluginText(AdventureManagerImpl.getInstance().getMiniMessageFormat(component), System.currentTimeMillis());
+                    receiver.setOtherPluginText(miniMessage.serialize(component), System.currentTimeMillis());
+                } else {
+                    WrappedChatComponent wrappedChatComponent = packet.getChatComponents().readSafely(0);
+                    if (wrappedChatComponent != null) {
+                        json = wrappedChatComponent.getJson();
+                        Component component = GsonComponentSerializer.gson().deserialize(json);
+                        if (component instanceof TranslatableComponent) {
+                            return;
+                        }
+                        receiver.setOtherPluginText(miniMessage.serialize(component), System.currentTimeMillis());
+                    }
                 }
             }
         }
@@ -204,7 +219,7 @@ public class ActionBarManagerImpl implements ActionBarManager, Listener {
                         // We can't get TranslatableComponent's width :(
                         return;
                     }
-                    receiver.setOtherPluginText(AdventureManagerImpl.getInstance().getMiniMessageFormat(component), System.currentTimeMillis());
+                    receiver.setOtherPluginText(miniMessage.serialize(component), System.currentTimeMillis());
                 }
             }
         }
@@ -212,10 +227,10 @@ public class ActionBarManagerImpl implements ActionBarManager, Listener {
 
     public void onReceiveActionBarPacket(PacketEvent event) {
         PacketContainer packet = event.getPacket();
-        WrappedChatComponent wrappedChatComponent = packet.getChatComponents().read(0);
-        if (wrappedChatComponent != null) {
-            ActionBarReceiver receiver = getReceiver(event.getPlayer().getUniqueId());
-            if (receiver != null) {
+        ActionBarReceiver receiver = getReceiver(event.getPlayer().getUniqueId());
+        if (receiver != null) {
+            WrappedChatComponent wrappedChatComponent = packet.getChatComponents().read(0);
+            if (wrappedChatComponent != null) {
                 String strJson = wrappedChatComponent.getJson();
                 // for better performance
                 if (strJson.contains("\"name\":\"np\",\"objective\":\"ab\"")) {
@@ -223,10 +238,14 @@ public class ActionBarManagerImpl implements ActionBarManager, Listener {
                 }
                 event.setCancelled(true);
                 receiver.setOtherPluginText(
-                        AdventureManagerImpl.getInstance().getMiniMessageFormat(
-                                GsonComponentSerializer.gson().deserialize(strJson)
-                        ), System.currentTimeMillis()
+                        miniMessage.serialize(GsonComponentSerializer.gson().deserialize(strJson)), System.currentTimeMillis()
                 );
+            } else if (ReflectionUtils.isPaper()) {
+                Object adventureComponent = packet.getModifier().readSafely(1);
+                if (adventureComponent != null) {
+                    String other = ReflectionUtils.getMiniMessageTextFromNonShadedComponent(adventureComponent);
+                    receiver.setOtherPluginText(other, System.currentTimeMillis());
+                }
             }
         }
     }

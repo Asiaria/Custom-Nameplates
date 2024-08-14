@@ -22,7 +22,6 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketContainer;
 import net.momirealms.customnameplates.api.CustomNameplatesPlugin;
-import net.momirealms.customnameplates.api.util.LogUtils;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -47,7 +46,7 @@ public class PacketManager {
 
     public void send(Player player, PacketContainer packet) {
         if (!player.isOnline()) {
-            LogUtils.warn(player.getName() + " not online");
+            return;
         }
         this.plugin.debug("Packet sent: " + packet.getType() + " to " + player.getName());
         this.protocolManager.sendServerPacket(player, packet);

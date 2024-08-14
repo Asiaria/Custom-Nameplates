@@ -17,6 +17,9 @@
 
 package net.momirealms.customnameplates.paper.mechanic.bubble.provider;
 
+import net.advancedplugins.chat.api.AdvancedChannelChatEvent;
+import net.advancedplugins.chat.api.AdvancedChatAPI;
+import net.advancedplugins.chat.channel.ChatChannel;
 import net.momirealms.customnameplates.api.CustomNameplatesPlugin;
 import net.momirealms.customnameplates.api.manager.BubbleManager;
 import net.momirealms.customnameplates.api.mechanic.bubble.provider.AbstractChatProvider;
@@ -24,11 +27,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 
-public class AsyncChatProvider extends AbstractChatProvider {
+import java.util.List;
 
-    public AsyncChatProvider(BubbleManager chatBubblesManager) {
+public class AdvancedChatProvider extends AbstractChatProvider {
+
+    public AdvancedChatProvider(BubbleManager chatBubblesManager) {
         super(chatBubblesManager);
     }
 
@@ -44,22 +48,41 @@ public class AsyncChatProvider extends AbstractChatProvider {
 
     @Override
     public boolean hasJoinedChannel(Player player, String channelID) {
-        return true;
+        ChatChannel chatChannel = AdvancedChatAPI.getApi().getPlayerChatChannel(player.getUniqueId());
+        if (chatChannel == null) {
+            return false;
+        }
+        return chatChannel.getSectionName().equals(channelID);
     }
 
     @Override
     public boolean canJoinChannel(Player player, String channelID) {
-        return true;
+        List<ChatChannel> channelList = AdvancedChatAPI.getApi().getAllowedChatChannels(player);
+        for (ChatChannel chatChannel : channelList) {
+            if (chatChannel.getSectionName().equals(channelID)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public boolean isIgnoring(Player sender, Player receiver) {
-        return false;
+        return AdvancedChatAPI.getApi().getIgnoredPlayers(receiver).contains(sender.getName());
     }
 
-    // This event is not async sometimes
     @EventHandler (ignoreCancelled = true)
-    public void onChat(AsyncPlayerChatEvent event) {
-        CustomNameplatesPlugin.get().getScheduler().runTaskAsync(() -> chatBubblesManager.onChat(event.getPlayer(), event.getMessage()));
+    public void onAdvancedChat(AdvancedChannelChatEvent event) {
+        String channel = event.getChannel().getSectionName();
+        for (String black : chatBubblesManager.getBlacklistChannels()) {
+            if (channel.equals(black)) return;
+        }
+        if (event.getSender() instanceof Player player) {
+            if (!player.isOnline())
+                return;
+            CustomNameplatesPlugin.get().getScheduler().runTaskAsync(() -> {
+                chatBubblesManager.onChat(player, event.getMessage(), channel);
+            });
+        }
     }
 }

@@ -29,18 +29,13 @@ public interface VersionManager {
     boolean isFolia();
 
     /**
-     * Get bukkit version
-     *
-     * @return version
-     */
-    String getServerVersion();
-
-    /**
      * Check update
      *
      * @return return true if plugin needs update
      */
     CompletionStage<Boolean> checkUpdate();
+
+    boolean isVersionNewerThan1_20_5();
 
     /**
      * Get plugin version
@@ -65,6 +60,8 @@ public interface VersionManager {
     int getPackFormat();
 
     boolean isVersionNewerThan1_19();
+
+    boolean isMojmap();
 
     boolean isVersionNewerThan1_19_R2();
 

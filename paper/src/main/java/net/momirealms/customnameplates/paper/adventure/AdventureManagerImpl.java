@@ -19,7 +19,6 @@ package net.momirealms.customnameplates.paper.adventure;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -75,8 +74,8 @@ public class AdventureManagerImpl implements AdventureManager {
         this.cacheSystem = new CacheSystem(CNConfig.cacheSize);
     }
 
-    public WrappedChatComponent getWrappedChatComponentFromMiniMessage(String text) {
-        return cacheSystem.getWrappedChatComponentFromCache(text);
+    public String getJsonComponentFromMiniMessage(String text) {
+        return cacheSystem.getJsonComponentFromCache(text);
     }
 
     public Object getIChatComponentFromMiniMessage(String text) {
@@ -195,12 +194,12 @@ public class AdventureManagerImpl implements AdventureManager {
                 case 'd' -> stringBuilder.append("<light_purple>");
                 case 'e' -> stringBuilder.append("<yellow>");
                 case 'f' -> stringBuilder.append("<white>");
-                case 'r' -> stringBuilder.append("<r><!i>");
+                case 'r' -> stringBuilder.append("<reset>");
                 case 'l' -> stringBuilder.append("<b>");
-                case 'm' -> stringBuilder.append("<s>");
+                case 'm' -> stringBuilder.append("<st>");
                 case 'o' -> stringBuilder.append("<i>");
                 case 'n' -> stringBuilder.append("<u>");
-                case 'k' -> stringBuilder.append("<o>");
+                case 'k' -> stringBuilder.append("<obf>");
                 case 'x' -> {
                     if (i + 13 >= chars.length
                             || !isColorCode(chars[i+2])
@@ -286,11 +285,15 @@ public class AdventureManagerImpl implements AdventureManager {
         }
     }
 
+    public Audience audience(Player player) {
+        return adventure.player(player);
+    }
+
     public class CacheSystem {
 
         private final LoadingCache<String, Object> miniMessageToIChatComponentCache;
         private final LoadingCache<String, Component> miniMessageToComponentCache;
-        private final LoadingCache<String, WrappedChatComponent> miniMessageToWrappedChatComponentCache;
+        private final LoadingCache<String, String> miniMessageToJsonChatComponentCache;
 
         public CacheSystem(int size) {
             miniMessageToIChatComponentCache = CacheBuilder.newBuilder()
@@ -315,15 +318,15 @@ public class AdventureManagerImpl implements AdventureManager {
                                     return fetchComponent(text);
                                 }
                             });
-            miniMessageToWrappedChatComponentCache = CacheBuilder.newBuilder()
+            miniMessageToJsonChatComponentCache = CacheBuilder.newBuilder()
                     .maximumSize(size)
                     .expireAfterWrite(10, TimeUnit.MINUTES)
                     .build(
                             new CacheLoader<>() {
                                 @NotNull
                                 @Override
-                                public WrappedChatComponent load(@NotNull String text) {
-                                    return fetchWrappedChatComponent(text);
+                                public String load(@NotNull String text) {
+                                    return fetchJsonChatComponent(text);
                                 }
                             });
         }
@@ -349,11 +352,11 @@ public class AdventureManagerImpl implements AdventureManager {
         }
 
         @NotNull
-        private WrappedChatComponent fetchWrappedChatComponent(String text) {
+        private String fetchJsonChatComponent(String text) {
             if (CNConfig.legacyColorSupport) {
-                return WrappedChatComponent.fromJson(GsonComponentSerializer.gson().serialize(MiniMessage.miniMessage().deserialize(legacyToMiniMessage(text))));
+                return GsonComponentSerializer.gson().serialize(MiniMessage.miniMessage().deserialize(legacyToMiniMessage(text)));
             } else {
-                return WrappedChatComponent.fromJson(GsonComponentSerializer.gson().serialize(MiniMessage.miniMessage().deserialize(text)));
+                return GsonComponentSerializer.gson().serialize(MiniMessage.miniMessage().deserialize(text));
             }
         }
 
@@ -375,12 +378,12 @@ public class AdventureManagerImpl implements AdventureManager {
             }
         }
 
-        public WrappedChatComponent getWrappedChatComponentFromCache(String text) {
+        public String getJsonComponentFromCache(String text) {
             try {
-                return miniMessageToWrappedChatComponentCache.get(text);
+                return miniMessageToJsonChatComponentCache.get(text);
             } catch (ExecutionException e) {
                 e.printStackTrace();
-                return WrappedChatComponent.fromText("");
+                return "{\"text\":\"\"}";
             }
         }
     }

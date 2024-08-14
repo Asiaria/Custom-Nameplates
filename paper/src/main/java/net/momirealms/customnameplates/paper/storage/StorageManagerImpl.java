@@ -28,6 +28,7 @@ import net.momirealms.customnameplates.api.event.NameplateDataLoadEvent;
 import net.momirealms.customnameplates.api.manager.StorageManager;
 import net.momirealms.customnameplates.api.util.LogUtils;
 import net.momirealms.customnameplates.paper.CustomNameplatesPluginImpl;
+import net.momirealms.customnameplates.paper.storage.method.NoneStorage;
 import net.momirealms.customnameplates.paper.storage.method.database.nosql.MongoDBImpl;
 import net.momirealms.customnameplates.paper.storage.method.database.nosql.RedisManager;
 import net.momirealms.customnameplates.paper.storage.method.database.sql.H2Impl;
@@ -84,8 +85,10 @@ public class StorageManagerImpl implements Listener, StorageManager {
                if (player == null || !player.isOnline()) return;
                var onlineUser = new OnlineUser(player, playerData);
                this.putOnlineUserInMap(onlineUser);
-               NameplateDataLoadEvent syncEvent = new NameplateDataLoadEvent(uuid, onlineUser);
-               plugin.getServer().getPluginManager().callEvent(syncEvent);
+               plugin.getScheduler().runTaskAsync(() -> {
+                   NameplateDataLoadEvent syncEvent = new NameplateDataLoadEvent(uuid, onlineUser);
+                   plugin.getServer().getPluginManager().callEvent(syncEvent);
+               });
            }
         });
     }
@@ -178,6 +181,7 @@ public class StorageManagerImpl implements Listener, StorageManager {
                 case MySQL -> this.dataSource = new MySQLImpl(plugin);
                 case MariaDB -> this.dataSource = new MariaDBImpl(plugin);
                 case MongoDB -> this.dataSource = new MongoDBImpl(plugin);
+                case None -> this.dataSource = new NoneStorage(plugin);
             }
             if (this.dataSource != null) this.dataSource.initialize();
             else LogUtils.severe("No storage type is set.");

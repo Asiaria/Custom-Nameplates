@@ -90,8 +90,21 @@ public class ResourcePackManagerImpl implements ResourcePackManager {
         // save unicodes
         this.saveLegacyUnicodes();
         // generate shaders
-        this.generateShaders();
-
+        if (!plugin.getVersionManager().isVersionNewerThan1_20_5()) {
+            this.generateShaders("ResourcePack" + File.separator + "assets" + File.separator + "minecraft" + File.separator + "shaders" + File.separator + "core" + File.separator, false);
+            this.generateShaders("ResourcePack" + File.separator + "overlay_1_20_5" + File.separator + "assets" + File.separator + "minecraft" + File.separator + "shaders" + File.separator + "core" + File.separator, true);
+        } else {
+            this.generateShaders("ResourcePack" + File.separator + "overlay_1_20_5" + File.separator + "assets" + File.separator + "minecraft" + File.separator + "shaders" + File.separator + "core" + File.separator, true);
+            try {
+                FileUtils.copyDirectory(
+                        new File(plugin.getDataFolder(), "ResourcePack" + File.separator + "overlay_1_20_5"),
+                        new File(plugin.getDataFolder(), "ResourcePack")
+                );
+                FileUtils.deleteDirectory(new File(plugin.getDataFolder(), "ResourcePack" + File.separator + "overlay_1_20_5"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         // add offset characters
         this.getOffsets(texturesFolder).forEach(providers::add);
         // add nameplate characters
@@ -110,9 +123,8 @@ public class ResourcePackManagerImpl implements ResourcePackManager {
         this.copyResourcePackToHookedPlugins(resourcePackFolder);
     }
 
-    private void generateShaders() {
+    private void generateShaders(String path, boolean v1_20_5) {
         if (!CNConfig.enableShader) return;
-        String path = "ResourcePack" + File.separator + "assets" + File.separator + "minecraft" + File.separator + "shaders" + File.separator + "core" + File.separator;
         plugin.saveResource(path + "rendertype_text.fsh", true);
         plugin.saveResource(path + "rendertype_text.json", true);
         plugin.saveResource(path + "rendertype_text.vsh", true);
@@ -126,11 +138,13 @@ public class ResourcePackManagerImpl implements ResourcePackManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        String mainShader = v1_20_5 ? ShaderConstants.Nameplates_Shader_1_20_5 : ShaderConstants.Nameplates_Shader_1_20_4;
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(shader1), StandardCharsets.UTF_8))) {
             writer.write(sb1.toString()
                     .replace("%SHADER_0%", !CNConfig.animatedImage ? "" : ShaderConstants.Animated_Text_Out)
-                    .replace("%SHADER_1%", !CNConfig.textEffects ? ShaderConstants.Nameplates_Shader : ShaderConstants.ItemsAdder_Text_Effects + ShaderConstants.Nameplates_Shader)
+                    .replace("%SHADER_1%", !CNConfig.textEffects ? mainShader : ShaderConstants.ItemsAdder_Text_Effects + mainShader)
                     .replace("%SHADER_2%", !CNConfig.animatedImage ? "" : ShaderConstants.Animated_Text_VSH)
                     .replace("%SHADER_3%", !CNConfig.hideScoreboardNumber ? "" : ShaderConstants.Hide_ScoreBoard_Numbers)
             );
@@ -495,29 +509,57 @@ public class ResourcePackManagerImpl implements ResourcePackManager {
     }
 
     private void setPackFormat() {
-        plugin.saveResource("ResourcePack" + File.separator + "pack.mcmeta", false);
-        File format_file = new File(plugin.getDataFolder(), "ResourcePack" + File.separator + "pack.mcmeta");
-        String line;
-        StringBuilder sb = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(format_file), StandardCharsets.UTF_8))) {
-            while ((line = reader.readLine()) != null) {
-                sb.append(line).append(System.lineSeparator());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (plugin.getVersionManager().isVersionNewerThan1_20_5()) {
+            plugin.saveResource("ResourcePack" + File.separator + "pack_1_20_5.mcmeta", false);
+            File file = new File(plugin.getDataFolder(), "ResourcePack" + File.separator + "pack_1_20_5.mcmeta");
+            file.renameTo(new File(plugin.getDataFolder(), "ResourcePack" + File.separator + "pack.mcmeta"));
+        } else {
+            plugin.saveResource("ResourcePack" + File.separator + "pack.mcmeta", false);
         }
-        try (BufferedWriter writer = new BufferedWriter(
-                new OutputStreamWriter(new FileOutputStream(new File(plugin.getDataFolder(),
-                        "ResourcePack" + File.separator + "pack.mcmeta")), StandardCharsets.UTF_8))) {
-            writer.write(sb.toString().replace("%version%", String.valueOf(plugin.getVersionManager().getPackFormat())));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+//        File format_file = new File(plugin.getDataFolder(), "ResourcePack" + File.separator + "pack.mcmeta");
+//        String line;
+//        StringBuilder sb = new StringBuilder();
+//        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(format_file), StandardCharsets.UTF_8))) {
+//            while ((line = reader.readLine()) != null) {
+//                sb.append(line).append(System.lineSeparator());
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        try (BufferedWriter writer = new BufferedWriter(
+//                new OutputStreamWriter(new FileOutputStream(new File(plugin.getDataFolder(),
+//                        "ResourcePack" + File.separator + "pack.mcmeta")), StandardCharsets.UTF_8))) {
+//            writer.write(sb.toString().replace("%version%", String.valueOf(plugin.getVersionManager().getPackFormat())));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public static class ShaderConstants {
 
-        public static final String Nameplates_Shader =
+        public static final String Nameplates_Shader_1_20_5 =
+                "if (Color.xyz == vec3(255., 254., 253.) / 255.) {\n" +
+                        "        vertexColor = Color*texelFetch(Sampler2, UV2 / 16, 0);\n" +
+                        "        vertex.y += 1;\n" +
+                        "        vertex.x += 1;\n" +
+                        "        gl_Position = ProjMat * ModelViewMat * vertex;\n" +
+                        "    } else if (Color.xyz == vec3(254., 254., 254.) / 255.) {\n" +
+                        "        vertexColor = Color*texelFetch(Sampler2, UV2 / 16, 0);\n" +
+                        "        vertex.z *= 1.001;\n" +
+                        "        vertex.x *= 1.001;\n" +
+                        "        gl_Position = ProjMat * ModelViewMat * vertex;\n" +
+                        "    } else if (Color.xyz == vec3(253., 254., 254.) / 255.) {\n" +
+                        "        vertexColor = Color*texelFetch(Sampler2, UV2 / 16, 0);\n" +
+                        "        vertex.z *= 1.001001;\n" +
+                        "        vertex.x *= 1.001001;\n" +
+                        "        gl_Position = ProjMat * ModelViewMat * vertex;\n" +
+                        "    } else {\n" +
+                        "        vertexColor = Color*texelFetch(Sampler2, UV2 / 16, 0);\n" +
+                        "        gl_Position = ProjMat * ModelViewMat * vertex;\n" +
+                        "    }";
+
+        public static final String Nameplates_Shader_1_20_4 =
                 "if (Color.xyz == vec3(255., 254., 253.) / 255.) {\n" +
                 "        vertexColor = Color*texelFetch(Sampler2, UV2 / 16, 0);\n" +
                 "        vertex.y += 1;\n" +

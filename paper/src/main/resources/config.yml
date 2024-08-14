@@ -1,5 +1,5 @@
 # Do not change
-config-version: '26'
+config-version: '27'
 
 # Debug mode
 debug: false
@@ -11,8 +11,8 @@ metrics: true
 update-checker: true
 
 # Language
-# english/chinese/spanish/russian/turkish/french
-lang: english
+# https://github.com/Xiao-MoMi/Custom-Nameplates/tree/main/paper/src/main/resources/messages
+lang: en
 
 # Modules
 modules:
@@ -40,6 +40,7 @@ integrations:
     VentureChat: false
     HuskChat: false
     CarbonChat: false
+    AdvancedChat: false
 
 resource-pack:
   # disable resource pack generation on server start

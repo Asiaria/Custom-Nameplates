@@ -18,7 +18,6 @@
 package net.momirealms.customnameplates.paper.mechanic.requirement;
 
 import me.clip.placeholderapi.PlaceholderAPI;
-import net.momirealms.biomeapi.BiomeAPI;
 import net.momirealms.customnameplates.api.manager.RequirementManager;
 import net.momirealms.customnameplates.api.requirement.Requirement;
 import net.momirealms.customnameplates.api.requirement.RequirementExpansion;
@@ -32,7 +31,7 @@ import net.momirealms.customnameplates.paper.util.ClassUtils;
 import net.momirealms.customnameplates.paper.util.ConfigUtils;
 import net.momirealms.customnameplates.paper.util.DisguiseUtils;
 import net.momirealms.customnameplates.paper.util.GeyserUtils;
-import org.bson.types.Binary;
+import net.momirealms.sparrow.heart.SparrowHeart;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -328,14 +327,14 @@ public class RequirementManagerImpl implements RequirementManager {
         registerRequirement("biome", (args) -> {
             HashSet<String> biomes = new HashSet<>(ConfigUtils.stringListArgs(args));
             return condition -> {
-                String currentBiome = BiomeAPI.getBiomeAt(Objects.requireNonNull(condition.getOfflinePlayer().getPlayer()).getLocation());
+                String currentBiome = SparrowHeart.getInstance().getBiomeResourceLocation(Objects.requireNonNull(condition.getOfflinePlayer().getPlayer()).getLocation());
                 return biomes.contains(currentBiome);
             };
         });
         registerRequirement("!biome", (args) -> {
             HashSet<String> biomes = new HashSet<>(ConfigUtils.stringListArgs(args));
             return condition -> {
-                String currentBiome = BiomeAPI.getBiomeAt(Objects.requireNonNull(condition.getOfflinePlayer().getPlayer()).getLocation());
+                String currentBiome = SparrowHeart.getInstance().getBiomeResourceLocation(Objects.requireNonNull(condition.getOfflinePlayer().getPlayer()).getLocation());
                 return !biomes.contains(currentBiome);
             };
         });
@@ -379,9 +378,8 @@ public class RequirementManagerImpl implements RequirementManager {
             return condition -> {
                 String currentWeather;
                 World world = Objects.requireNonNull(condition.getOfflinePlayer().getPlayer()).getWorld();
-                if (world.hasStorm()) currentWeather = "rainstorm";
+                if (world.isClearWeather()) currentWeather = "clear";
                 else if (world.isThundering()) currentWeather = "thunder";
-                else if (world.isClearWeather()) currentWeather = "clear";
                 else currentWeather = "rain";
                 for (String weather : weathers)
                     if (weather.equalsIgnoreCase(currentWeather))

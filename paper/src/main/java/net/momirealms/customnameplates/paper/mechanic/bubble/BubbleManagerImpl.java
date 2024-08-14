@@ -164,6 +164,8 @@ public class BubbleManagerImpl implements BubbleManager, Listener {
             this.chatProvider = new HuskChatProvider(this);
         } else if (CNConfig.carbonChatChannel) {
             this.chatProvider = new CarbonChatProvider(this);
+        } else if (CNConfig.advancedChatChannel) {
+            this.chatProvider = new AdvancedChatProvider(this);
         } else {
             try {
                 Class.forName("io.papermc.paper.event.player.AsyncChatEvent");
@@ -348,28 +350,31 @@ public class BubbleManagerImpl implements BubbleManager, Listener {
             return;
 
         StaticTextEntity entity = tagEntity.addTag(StaticTextTagSetting.builder()
-                .leaveRule((p, e) -> true)
-                .comeRule((p, e) -> {
+                .leaveRule((receiver, owner) -> true)
+                .comeRule((receiver, owner) -> {
+                    if ((owner instanceof Player sender) && chatProvider.isIgnoring(sender, receiver)) {
+                        return false;
+                    }
                     switch (channelMode) {
                         case ALL -> {
                             return true;
                         }
                         case JOINED -> {
-                            return channel == null || chatProvider.hasJoinedChannel(p, channel);
+                            return channel == null || chatProvider.hasJoinedChannel(receiver, channel);
                         }
                         case CAN_JOIN -> {
-                            return channel == null || chatProvider.canJoinChannel(p, channel);
+                            return channel == null || chatProvider.canJoinChannel(receiver, channel);
                         }
                     }
                     return false;
                 })
                 .verticalOffset(yOffset)
                 .defaultText(text)
-                .plugin("bubble")
+                .id("bubble")
                 .build());
 
         for (StaticTextEntity bubble : tagEntity.getStaticTags()) {
-            if (bubble.getPlugin().equals("bubble")) {
+            if (bubble.getID().equals("bubble")) {
                 bubble.setOffset(bubble.getOffset() + lineSpace);
             }
         }
