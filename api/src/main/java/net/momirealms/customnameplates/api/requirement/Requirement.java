@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) <2022> <XiaoMoMi>
+ *  Copyright (C) <2024> <XiaoMoMi>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,13 +17,50 @@
 
 package net.momirealms.customnameplates.api.requirement;
 
+import net.momirealms.customnameplates.api.CNPlayer;
+
+/**
+ * Represents a requirement that must be satisfied between two players. Requirements can have different types and refresh intervals.
+ */
 public interface Requirement {
 
     /**
-     * Is condition met the requirement
+     * Checks if the requirement is satisfied between two players.
      *
-     * @param condition condition
-     * @return meet or not
+     * @param p1 the first player
+     * @param p2 the second player
+     * @return true if the requirement is satisfied, false otherwise
      */
-    boolean isConditionMet(Condition condition);
+    boolean isSatisfied(CNPlayer p1, CNPlayer p2);
+
+    /**
+     * Returns the type of the requirement.
+     *
+     * @return the type as a string
+     */
+    String type();
+
+    /**
+     * Returns the refresh interval of the requirement.
+     *
+     * @return the refresh interval in ticks
+     */
+    int refreshInterval();
+
+    /**
+     * Returns the hash code for the requirement, ensuring uniqueness.
+     *
+     * @return the hash code
+     */
+    @Override
+    int hashCode();
+
+    /**
+     * Returns an empty requirement that is always satisfied.
+     *
+     * @return an empty requirement
+     */
+    static Requirement empty() {
+        return EmptyRequirement.instance();
+    }
 }

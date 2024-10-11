@@ -1,0 +1,191 @@
+# Do not modify this value
+config-version: '${config_version}'
+# Enables or disables debug mode
+debug: false
+# Enables or disables metrics collection via BStats
+metrics: true
+# Enables automatic update checks
+update-checker: true
+# Forces a specific locale (e.g., zh_cn)
+force-locale: ''
+
+# Module Settings: Enable or disable specific features.
+modules:
+  nametags: true             # Enable name tags
+  nameplates: true           # Enable nameplates
+  backgrounds: true          # Enable background images for nameplates
+  bubbles: true              # Enable bubble text display
+  bossbars: true             # Enable bossbars
+  actionbars: true           # Enable actionbars
+  images: true               # Enable image displays
+
+# Plugin Integrations: Integrate resource packs and chat plugins with other plugins.
+integrations:
+  resource-pack:
+    ItemsAdder: false         # Integration with ItemsAdder
+    ItemsAdder-old-method: false # Old method for ItemsAdder
+    Oraxen: false             # Integration with Oraxen
+  chat:
+    TrChat: false             # Integration with TrChat
+    VentureChat: false        # Integration with VentureChat
+    HuskChat: false           # Integration with HuskChat
+    CarbonChat: false         # Integration with CarbonChat
+    AdvancedChat: false       # Integration with AdvancedChat
+    Essentials: false         # Integration with Essentials chat
+
+# Resource Pack Generation Settings: Configure resource pack generation behavior.
+resource-pack:
+  disable-generation-on-start: false  # Allow resource pack generation at server start
+  namespace: "nameplates"             # Namespace for the resource pack
+  font: "default"                     # Default font used
+  initial-char: '뀁'                  # Starting character for custom fonts (won't affect Korean characters in chat)
+  image-path:                         # Paths for different assets
+    nameplates: 'font/nameplates/'    # Path for nameplates assets
+    backgrounds: 'font/backgrounds/'  # Path for background images
+    images: 'font/images/'            # Path for other images
+    bubbles: 'font/bubbles/'          # Path for bubble text images
+    space-split: 'font/base/'         # Path for base font images
+  shader:
+    enable: true                      # Enable shader generation
+    hide-scoreboard-number: false     # Hiding of scoreboard numbers
+    animated-text: false              # Animated text shaders
+    ItemsAdder-text-effects: false    # ItemsAdder text effects support
+  transparent-bossbar:
+    color: YELLOW                     # BossBar color to remove
+    "1_20_2+": true                   # Enable transparent bossbar for Minecraft 1.20.2+
+    "1_17-1_20_1": true               # Enable transparent bossbar for Minecraft 1.17-1.20.1
+  legacy-unicodes: true               # Enable legacy Unicode support for Minecraft 1.20+ (increases resource pack size by 900KB)
+
+# Additional Settings: Extra options to control behavior and performance.
+other-settings:
+  legacy-color-code-support: true     # Enable support for legacy color codes using &
+  send-delay: 20                      # Set actionbar/bossbar send delay (ticks)
+  catch-other-plugin-actionbar: true  # Capture actionbars from other plugins
+  other-actionbar-stay-time: 3000     # How long does other actionsbars stay (ms)
+  hide-team-names: true               # Hide the team name sent by other plugins or vanilla team system
+  unsafe-chat-event: false            # Listen for canceled(unsafe) chat events from unknown plugins
+  default-condition-refresh-interval: 1  # Set default condition refresh interval
+  default-placeholder-refresh-interval: 1  # Set default placeholder refresh interval
+  placeholder-refresh-interval:       # Custom placeholder refresh intervals for performance optimization
+    "%player_name%": 100
+    "%vault_prefix%": 20
+  # Font Templates: Define different fonts and their settings.
+  font-templates:
+    space:
+      space:
+        " ": 4                        # Define space width as 4 units
+        "\\u200c": 0                  # Define zero-width non-joiner as 0 width
+    unihex:
+      unifont:
+        file: unifont.zip             # Load font from unifont.zip
+        generate: false               # Don't include font in the generated resource pack
+        size_overrides:               # Override size for specific Unicode ranges
+          - from: "\\u3001"
+            to: "\\u30FF"
+            left: 0
+            right: 15
+          - from: "\\u3200"
+            to: "\\u9FFF"
+            left: 0
+            right: 15
+          - from: "\\u1100"
+            to: "\\u11FF"
+            left: 0
+            right: 15
+          - from: "\\u3130"
+            to: "\\u318F"
+            left: 0
+            right: 15
+          - from: "\\uA960"
+            to: "\\uA97F"
+            left: 0
+            right: 15
+          - from: "\\uD7B0"
+            to: "\\uD7FF"
+            left: 0
+            right: 15
+          - from: "\\uAC00"
+            to: "\\uD7AF"
+            left: 1
+            right: 15
+          - from: "\\uF900"
+            to: "\\uFAFF"
+            left: 0
+            right: 15
+          - from: "\\uFF01"
+            to: "\\uFF5E"
+            left: 0
+            right: 15
+      unifont_jp:
+        file: unifont_jp.zip          # Load Japanese unifont
+        generate: false               # Don't generate in the resource pack
+        filter:
+          "jp": true                  # Apply to Japanese characters only
+        size_overrides:
+          - from: "\\u3200"
+            to: "\\u9FFF"
+            left: 0
+            right: 15
+          - from: "\\uF900"
+            to: "\\uFAFF"
+            left: 0
+            right: 15
+    bitmap:
+      ascii:
+        codepoints: ascii             # Define ASCII bitmap font
+        file: ascii.png               # Use ascii.png file for the font
+        height: 8                     # Font height is 8 units
+        custom: false                 # Not a custom font (default Minecraft)
+      ascii_sga:
+        codepoints: ascii_sga
+        file: ascii_sga.png
+        height: 8
+        custom: false
+      asciillager:
+        codepoints: asciillager
+        file: asciillager.png
+        height: 8
+        custom: false
+      nonlatin_european:
+        codepoints: nonlatin_european
+        file: nonlatin_european.png
+        height: 8
+        custom: false
+      accented:
+        codepoints: accented
+        file: accented.png
+        height: 12
+        custom: false
+    legacy_unicode:
+      legacy_unicode:
+        file: unicode_page_%02x.png   # Legacy Unicode characters page file
+        height: 8                     # Set height to 8 units
+        custom: false
+    unicode:
+      unicode:
+        file: unicode_page_%02x.png   # Default Unicode characters
+        sizes: glyph_sizes.bin        # Glyph size configuration
+    ttf:
+      example:
+        generate: false               # Should this TTF file be included in the generated pack
+        file: example.ttf             # Define the TTF file to load the font from
+        size: 10.0                    # Set font size
+        oversample: 8.0               # Oversample rate for TTF rendering
+        skip: []                      # Skipped characters in list format
+  shift-fonts:
+    shift_0:
+      - space
+      - nonlatin_european:7
+      - accented:9
+      - ascii:7
+      #- unifont_jp
+      - unifont
+    shift_1:
+      - space
+      - nonlatin_european:3
+      - accented:6
+      - ascii:3
+      - legacy_unicode:3
+    shift_2:
+      - space
+      - ascii:-15

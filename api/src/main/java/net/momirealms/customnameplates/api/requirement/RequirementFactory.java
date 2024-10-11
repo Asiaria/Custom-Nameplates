@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) <2022> <XiaoMoMi>
+ *  Copyright (C) <2024> <XiaoMoMi>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,15 +18,16 @@
 package net.momirealms.customnameplates.api.requirement;
 
 /**
- * An interface for a requirement factory that builds requirements.
+ * Interface representing a factory for creating {@link Requirement} instances.
  */
 public interface RequirementFactory {
 
     /**
-     * Build a requirement with the given arguments.
+     * Processes the provided arguments and creates a new {@link Requirement} instance.
      *
-     * @param args The arguments used to build the requirement.
-     * @return The built requirement.
+     * @param args            the arguments needed to create the requirement
+     * @param refreshInterval the refresh interval for the requirement
+     * @return a new {@link Requirement} instance
      */
-    Requirement build(Object args);
+    Requirement process(Object args, int refreshInterval);
 }

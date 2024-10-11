@@ -1,0 +1,13 @@
+# https://mo-mi.gitbook.io/xiaomomi-plugins/plugin-wiki/customnameplates/config/actionbar.yml
+actionbar:
+  conditions:
+    condition_1:
+      type: permission
+      refresh-interval: 20
+      value:
+        - actionbar.show
+  text-display-order:
+    1:
+      duration: -1
+      text: '%np_conditional_actionbar%'
+      conditions: {}
