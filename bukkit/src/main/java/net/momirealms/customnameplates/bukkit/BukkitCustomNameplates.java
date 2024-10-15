@@ -24,6 +24,7 @@ import net.momirealms.customnameplates.api.feature.JoinQuitListener;
 import net.momirealms.customnameplates.api.feature.PlayerListener;
 import net.momirealms.customnameplates.api.helper.AdventureHelper;
 import net.momirealms.customnameplates.api.helper.VersionHelper;
+import net.momirealms.customnameplates.api.util.Vector3;
 import net.momirealms.customnameplates.backend.feature.actionbar.ActionBarManagerImpl;
 import net.momirealms.customnameplates.backend.feature.advance.AdvanceManagerImpl;
 import net.momirealms.customnameplates.backend.feature.background.BackgroundManagerImpl;
@@ -40,6 +41,7 @@ import net.momirealms.customnameplates.bukkit.compatibility.NameplatesExpansion;
 import net.momirealms.customnameplates.bukkit.compatibility.cosmetic.MagicCosmeticsHook;
 import net.momirealms.customnameplates.bukkit.requirement.BukkitRequirementManager;
 import net.momirealms.customnameplates.bukkit.scheduler.BukkitSchedulerAdapter;
+import net.momirealms.customnameplates.bukkit.util.SimpleLocation;
 import net.momirealms.customnameplates.common.dependency.Dependency;
 import net.momirealms.customnameplates.common.dependency.DependencyManagerImpl;
 import net.momirealms.customnameplates.common.event.EventManager;
@@ -50,6 +52,8 @@ import net.momirealms.customnameplates.common.plugin.logging.JavaPluginLogger;
 import net.momirealms.customnameplates.common.plugin.logging.PluginLogger;
 import net.momirealms.customnameplates.common.plugin.scheduler.AbstractJavaScheduler;
 import net.momirealms.customnameplates.common.plugin.scheduler.SchedulerAdapter;
+import net.momirealms.customnameplates.common.plugin.scheduler.SchedulerTask;
+import net.momirealms.customnameplates.common.util.Pair;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -64,6 +68,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class BukkitCustomNameplates extends CustomNameplates implements Listener {
@@ -82,6 +87,9 @@ public class BukkitCustomNameplates extends CustomNameplates implements Listener
 
     private final List<JoinQuitListener> joinQuitListeners = new ArrayList<>();
     private final List<PlayerListener> playerListeners = new ArrayList<>();
+
+    private final ConcurrentHashMap<String, SimpleLocation> foliaLocationTracker = new ConcurrentHashMap<>();
+    private SchedulerTask foliaTrackerTask;
 
     private boolean loaded = false;
 
@@ -218,12 +226,43 @@ public class BukkitCustomNameplates extends CustomNameplates implements Listener
                 }
             });
         }
+
+        if (VersionHelper.isFolia()) {
+            this.foliaTrackerTask = getScheduler().asyncRepeating(() -> {
+                for (CNPlayer player : getOnlinePlayers()) {
+                    String name = player.name();
+                    SimpleLocation previousLocation = this.foliaLocationTracker.get(name);
+                    if (previousLocation != null) {
+                        String currentWorld = player.world();
+                        if (!currentWorld.equals(previousLocation.world())) {
+                            previousLocation.world(currentWorld);
+                            previousLocation.position(player.position());
+                            for (PlayerListener listener : this.playerListeners) {
+                                listener.onChangeWorld(player);
+                            }
+                            continue;
+                        }
+                        Vector3 previousPos = previousLocation.position();
+                        Vector3 currentPos = player.position();
+                        previousLocation.world(currentWorld);
+                        previousLocation.position(currentPos);
+                        double distance = Math.sqrt(Math.pow((currentPos.x() - previousPos.x()), 2) + Math.pow((currentPos.y() - previousPos.y()), 2) + Math.pow(currentPos.z() - previousPos.z(), 2));
+                        if (distance > 64) {
+                            for (PlayerListener listener : this.playerListeners) {
+                                listener.onTeleport(player);
+                            }
+                        }
+                    }
+                }
+            }, 200, 200, TimeUnit.MILLISECONDS);
+        }
     }
 
     @Override
     public void disable() {
         if (!this.loaded) return;
         if (this.scheduledMainTask != null) this.scheduledMainTask.cancel();
+        if (foliaTrackerTask != null) foliaTrackerTask.cancel();
         if (configManager != null) this.configManager.disable();
         if (actionBarManager != null) this.actionBarManager.disable();
         if (bossBarManager != null) this.bossBarManager.disable();
@@ -355,23 +394,31 @@ public class BukkitCustomNameplates extends CustomNameplates implements Listener
         for (JoinQuitListener listener : joinQuitListeners) {
             listener.onPlayerJoin(user);
         }
+        if (VersionHelper.isFolia()) {
+            foliaLocationTracker.put(player.getName(), new SimpleLocation(user.world(), user.position()));
+        }
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        CNPlayer cnPlayer = onlinePlayerMap.remove(event.getPlayer().getUniqueId());
+        Player player = event.getPlayer();
+        CNPlayer cnPlayer = onlinePlayerMap.remove(player.getUniqueId());
         if (cnPlayer == null) {
-            getPluginLogger().severe("Player " + event.getPlayer().getName() + " is not recorded by CustomNameplates");
+            getPluginLogger().severe("Player " + player.getName() + " is not recorded by CustomNameplates");
             return;
         }
         for (JoinQuitListener listener : joinQuitListeners) {
             listener.onPlayerQuit(cnPlayer);
         }
         entityIDFastLookup.remove(cnPlayer.entityID());
+        if (VersionHelper.isFolia()) {
+            foliaLocationTracker.remove(player.getName());
+        }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onChangeWorld(PlayerChangedWorldEvent event) {
+        if (VersionHelper.isFolia()) return;
         CNPlayer cnPlayer = getPlayer(event.getPlayer().getUniqueId());
         if (cnPlayer != null) {
             for (PlayerListener listener : playerListeners) {

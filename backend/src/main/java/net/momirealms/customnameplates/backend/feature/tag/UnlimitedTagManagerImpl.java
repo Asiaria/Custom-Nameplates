@@ -105,12 +105,12 @@ public class UnlimitedTagManagerImpl implements UnlimitedTagManager, JoinQuitLis
 
     @Override
     public void onChangeWorld(CNPlayer player) {
-        plugin.getScheduler().async().execute(() -> {
+        plugin.getScheduler().asyncLater(() -> {
             if (player.isOnline() && (player.isTempPreviewing() || player.isToggleablePreviewing())) {
                 onRemovePlayer(player, player);
                 onAddPlayer(player, player);
             }
-        });
+        }, VersionHelper.isFolia() ? 500 : 50, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -120,7 +120,7 @@ public class UnlimitedTagManagerImpl implements UnlimitedTagManager, JoinQuitLis
                 onRemovePlayer(player, player);
                 onAddPlayer(player, player);
             }
-        }, 50, TimeUnit.MILLISECONDS);
+        }, VersionHelper.isFolia() ? 500 : 50, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -130,7 +130,7 @@ public class UnlimitedTagManagerImpl implements UnlimitedTagManager, JoinQuitLis
                 onRemovePlayer(player, player);
                 onAddPlayer(player, player);
             }
-        }, 50, TimeUnit.MILLISECONDS);
+        }, VersionHelper.isFolia() ? 500 : 50, TimeUnit.MILLISECONDS);
     }
 
     @Override
