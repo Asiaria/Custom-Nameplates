@@ -38,6 +38,7 @@ import net.momirealms.customnameplates.backend.placeholder.PlaceholderManagerImp
 import net.momirealms.customnameplates.backend.storage.StorageManagerImpl;
 import net.momirealms.customnameplates.bukkit.command.BukkitCommandManager;
 import net.momirealms.customnameplates.bukkit.compatibility.NameplatesExpansion;
+import net.momirealms.customnameplates.bukkit.compatibility.NameplatesExtraExpansion;
 import net.momirealms.customnameplates.bukkit.compatibility.cosmetic.MagicCosmeticsHook;
 import net.momirealms.customnameplates.bukkit.requirement.BukkitRequirementManager;
 import net.momirealms.customnameplates.bukkit.scheduler.BukkitSchedulerAdapter;
@@ -53,7 +54,6 @@ import net.momirealms.customnameplates.common.plugin.logging.PluginLogger;
 import net.momirealms.customnameplates.common.plugin.scheduler.AbstractJavaScheduler;
 import net.momirealms.customnameplates.common.plugin.scheduler.SchedulerAdapter;
 import net.momirealms.customnameplates.common.plugin.scheduler.SchedulerTask;
-import net.momirealms.customnameplates.common.util.Pair;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -196,6 +196,7 @@ public class BukkitCustomNameplates extends CustomNameplates implements Listener
         }
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new NameplatesExpansion(this).register();
+            new NameplatesExtraExpansion(this).register();
         }
         if (Bukkit.getPluginManager().isPluginEnabled("MagicCosmetics")) {
             try {
@@ -284,6 +285,8 @@ public class BukkitCustomNameplates extends CustomNameplates implements Listener
         AdventureHelper.clearCache();
         this.onlinePlayerMap.clear();
         this.entityIDFastLookup.clear();
+        this.scheduler.shutdownScheduler();
+        this.scheduler.shutdownExecutor();
         this.loaded = false;
     }
 

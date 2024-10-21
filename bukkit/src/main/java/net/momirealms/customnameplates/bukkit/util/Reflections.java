@@ -287,7 +287,7 @@ public class Reflections {
     public static final Object instance$MinecraftRegistry;
 
     static {
-        if (VersionHelper.isVersionNewerThan1_20()) {
+        if (VersionHelper.isVersionNewerThan1_20_5()) {
             try {
                 Method method = requireNonNull(ReflectionUtils.getMethod(clazz$CraftRegistry, new String[]{"getMinecraftRegistry"}));
                 instance$MinecraftRegistry = method.invoke(null);
@@ -1003,6 +1003,12 @@ public class Reflections {
     public static final Field field$ClientboundSetPlayerTeamPacket$players = requireNonNull(
             ReflectionUtils.getInstanceDeclaredField(
                     clazz$ClientboundSetPlayerTeamPacket, Collection.class, 0
+            )
+    );
+
+    public static final Field field$ClientboundSetPlayerTeamPacket$name = requireNonNull(
+            ReflectionUtils.getInstanceDeclaredField(
+                    clazz$ClientboundSetPlayerTeamPacket, String.class, 0
             )
     );
 
