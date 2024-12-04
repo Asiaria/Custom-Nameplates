@@ -17,6 +17,7 @@
 
 package net.momirealms.customnameplates.backend.feature.tag;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.momirealms.customnameplates.api.CNPlayer;
 import net.momirealms.customnameplates.api.CustomNameplates;
 import net.momirealms.customnameplates.api.feature.Feature;
@@ -24,6 +25,7 @@ import net.momirealms.customnameplates.api.feature.tag.NameTagConfig;
 import net.momirealms.customnameplates.api.feature.tag.Tag;
 import net.momirealms.customnameplates.api.feature.tag.TagRenderer;
 import net.momirealms.customnameplates.api.feature.tag.UnlimitedTagManager;
+import net.momirealms.customnameplates.api.helper.VersionHelper;
 import net.momirealms.customnameplates.api.network.Tracker;
 
 import java.util.*;
@@ -37,6 +39,7 @@ public class TagRendererImpl implements TagRenderer {
     private Tag[] tagArray;
     private Tag[] rTagsArray;
     private double hatOffset;
+    private boolean valid = true;
 
     public TagRendererImpl(UnlimitedTagManager manager, CNPlayer owner) {
         this.owner = owner;
@@ -68,15 +71,23 @@ public class TagRendererImpl implements TagRenderer {
     }
 
     @Override
-    public void onTick() {
-        HashSet<CNPlayer> playersToUpdatePassengers = new HashSet<>();
-        HashSet<CNPlayer> tagTranslationUpdates = new HashSet<>();
+    public boolean isValid() {
+        return valid;
+    }
 
+    @Override
+    public void onTick() {
+        if (!isValid()) return;
+
+        Set<CNPlayer> playersToUpdatePassengers = new ObjectOpenHashSet<>();
+        Set<CNPlayer> tagTranslationUpdates = new ObjectOpenHashSet<>();
+
+        Collection<CNPlayer> nearbyPlayers = owner.nearbyPlayers();
         for (Tag tag : tagArray) {
             boolean canShow = tag.canShow();
             if (canShow) {
                 if (tag.isShown()) {
-                    for (CNPlayer nearby : owner.nearbyPlayers()) {
+                    for (CNPlayer nearby : nearbyPlayers) {
                         if (tag.isShown(nearby)) {
                             if (!tag.canShow(nearby)) {
                                 tag.hide(nearby);
@@ -97,7 +108,7 @@ public class TagRendererImpl implements TagRenderer {
                     tag.init();
                     tag.tick();
                     tag.show();
-                    for (CNPlayer nearby : owner.nearbyPlayers()) {
+                    for (CNPlayer nearby : nearbyPlayers) {
                         if (tag.canShow(nearby) && !tag.isShown(nearby)) {
                             tag.show(nearby);
                             playersToUpdatePassengers.add(nearby);
@@ -110,7 +121,7 @@ public class TagRendererImpl implements TagRenderer {
                 if (tag.isShown()) {
                     tag.hide();
                     if (!tag.relativeTranslation())
-                        tagTranslationUpdates.addAll(owner.nearbyPlayers());
+                        tagTranslationUpdates.addAll(nearbyPlayers);
                 }
             }
         }
@@ -133,6 +144,7 @@ public class TagRendererImpl implements TagRenderer {
 
     @Override
     public void destroy() {
+        this.valid = false;
         for (Tag tag : this.tagArray) {
             tag.hide();
             if (tag instanceof Feature feature) {
@@ -290,7 +302,13 @@ public class TagRendererImpl implements TagRenderer {
             passengers[index++] = passenger;
         }
         Object packet = CustomNameplates.getInstance().getPlatform().setPassengersPacket(owner.entityID(), passengers);
-        CustomNameplates.getInstance().getPacketSender().sendPacket(another, packet);
+        if (VersionHelper.isPaperOrItsForks()) {
+            CustomNameplates.getInstance().getPacketSender().sendPacket(another, packet);
+        } else {
+            CustomNameplates.getInstance().getScheduler().sync().runLater(() -> {
+                CustomNameplates.getInstance().getPacketSender().sendPacket(another, packet);
+            }, 0, null);
+        }
     }
 
     public void handleEntityDataChange(CNPlayer another, boolean isCrouching) {

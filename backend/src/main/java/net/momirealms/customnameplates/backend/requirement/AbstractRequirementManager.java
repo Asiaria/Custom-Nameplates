@@ -18,6 +18,8 @@
 package net.momirealms.customnameplates.backend.requirement;
 
 import dev.dejvokep.boostedyaml.block.implementation.Section;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.momirealms.customnameplates.api.ConfigManager;
 import net.momirealms.customnameplates.api.CustomNameplates;
 import net.momirealms.customnameplates.api.feature.PreParsedDynamicText;
@@ -26,15 +28,21 @@ import net.momirealms.customnameplates.api.requirement.RequirementFactory;
 import net.momirealms.customnameplates.api.requirement.RequirementManager;
 import net.momirealms.customnameplates.api.util.ConfigUtils;
 import net.momirealms.customnameplates.backend.requirement.builtin.*;
+import net.momirealms.customnameplates.common.util.ListUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 public abstract class AbstractRequirementManager implements RequirementManager {
 
     protected final CustomNameplates plugin;
-    private final HashMap<String, RequirementFactory> requirementFactoryMap = new HashMap<>();
+    private final Object2ObjectOpenHashMap<String, RequirementFactory> requirementFactoryMap = new Object2ObjectOpenHashMap<>(128);
+    private int countId = 0;
+    private final Map<Requirement, Integer> registeredRequirements = new Object2IntOpenHashMap<>(128);
 
     public AbstractRequirementManager(CustomNameplates plugin) {
         this.plugin = plugin;
@@ -42,7 +50,23 @@ public abstract class AbstractRequirementManager implements RequirementManager {
         this.registerPlatformRequirements();
     }
 
+    @Override
+    public void reload() {
+        this.countId = 0;
+        this.registeredRequirements.clear();
+    }
+
+    @Override
+    public int countId(Requirement requirement) {
+        if (requirement == null) return -1;
+        if (this.registeredRequirements.containsKey(requirement)) return this.registeredRequirements.get(requirement);
+        this.countId++;
+        this.registeredRequirements.put(requirement, countId);
+        return this.countId;
+    }
+
     private void registerInternalRequirements() {
+        this.registerRequirement((args, interval) -> new LaggyRequirement(interval, (int) args), "laggy");
         this.registerRequirement((args, interval) -> {
             Section section = ConfigUtils.safeCast(args, Section.class);
             if (section == null) return Requirement.empty();
@@ -100,10 +124,17 @@ public abstract class AbstractRequirementManager implements RequirementManager {
         this.registerRequirement((args, interval) -> {
             Section section = ConfigUtils.safeCast(args, Section.class);
             if (section == null) return Requirement.empty();
-            PreParsedDynamicText dynamicText1 = new PreParsedDynamicText(section.getString("value1", ""), true);
-            String regex = section.getString("value2", "");
+            PreParsedDynamicText dynamicText1 = new PreParsedDynamicText(section.getString("papi", ""), true);
+            String regex = section.getString("regex", "");
             return new RegexRequirement(interval, dynamicText1, regex);
         }, "regex");
+        this.registerRequirement((args, interval) -> {
+            Section section = ConfigUtils.safeCast(args, Section.class);
+            if (section == null) return Requirement.empty();
+            PreParsedDynamicText dynamicText1 = new PreParsedDynamicText(section.getString("papi", ""), true);
+            String regex = section.getString("regex", "");
+            return new NotRegexRequirement(interval, dynamicText1, regex);
+        }, "!regex");
         this.registerRequirement((args, interval) -> {
             Section section = ConfigUtils.safeCast(args, Section.class);
             if (section == null) return Requirement.empty();
@@ -178,6 +209,10 @@ public abstract class AbstractRequirementManager implements RequirementManager {
             boolean has = (boolean) args;
             return new HasBubbleRequirement(interval, has);
         }, "has-bubble");
+        this.registerRequirement((args, interval) -> new NameplateRequirement(interval, new HashSet<>(ListUtils.toList(args))), "nameplate");
+        this.registerRequirement((args, interval) -> new NotNameplateRequirement(interval, new HashSet<>(ListUtils.toList(args))), "!nameplate");
+        this.registerRequirement((args, interval) -> new BubbleRequirement(interval, new HashSet<>(ListUtils.toList(args))), "bubble");
+        this.registerRequirement((args, interval) -> new NotBubbleRequirement(interval, new HashSet<>(ListUtils.toList(args))), "!bubble");
     }
 
     protected abstract void registerPlatformRequirements();

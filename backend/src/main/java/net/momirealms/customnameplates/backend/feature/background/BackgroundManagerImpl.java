@@ -18,6 +18,7 @@
 package net.momirealms.customnameplates.backend.feature.background;
 
 import dev.dejvokep.boostedyaml.YamlDocument;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.momirealms.customnameplates.api.ConfigManager;
 import net.momirealms.customnameplates.api.CustomNameplates;
 import net.momirealms.customnameplates.api.feature.ConfiguredCharacter;
@@ -27,7 +28,10 @@ import net.momirealms.customnameplates.api.util.ConfigUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class BackgroundManagerImpl implements BackgroundManager {
 
@@ -57,7 +61,7 @@ public class BackgroundManagerImpl implements BackgroundManager {
 
     @Override
     public Collection<Background> getBackgrounds() {
-        return new HashSet<>(backgrounds.values());
+        return new ObjectArrayList<>(backgrounds.values());
     }
 
     private void loadConfigs() {

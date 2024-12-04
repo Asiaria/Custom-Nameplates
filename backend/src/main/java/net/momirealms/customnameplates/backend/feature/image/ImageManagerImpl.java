@@ -18,9 +18,11 @@
 package net.momirealms.customnameplates.backend.feature.image;
 
 import dev.dejvokep.boostedyaml.YamlDocument;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.momirealms.customnameplates.api.ConfigManager;
 import net.momirealms.customnameplates.api.CustomNameplates;
 import net.momirealms.customnameplates.api.feature.ConfiguredCharacter;
+import net.momirealms.customnameplates.api.feature.image.Animation;
 import net.momirealms.customnameplates.api.feature.image.Image;
 import net.momirealms.customnameplates.api.feature.image.ImageManager;
 import net.momirealms.customnameplates.api.util.ConfigUtils;
@@ -29,7 +31,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 public class ImageManagerImpl implements ImageManager {
@@ -59,7 +60,7 @@ public class ImageManagerImpl implements ImageManager {
 
     @Override
     public Collection<Image> images() {
-        return new HashSet<>(images.values());
+        return new ObjectArrayList<>(images.values());
     }
 
     private void loadConfigs() {
@@ -73,8 +74,11 @@ public class ImageManagerImpl implements ImageManager {
             String id = configFile.getName().substring(0, configFile.getName().lastIndexOf("."));
             Image image = Image.builder()
                     .id(id)
-                    .hasShadow(!config.getBoolean("shadow.remove", false))
-                    .opacity(config.getInt("shadow.opacity", 254))
+                    .animation(config.contains("animation") ? new Animation(
+                            config.getInt("animation.speed", 64),
+                            config.getInt("animation.frames", 1)
+                    ) : null)
+                    .removeShadow(!config.getBoolean("shadow", true))
                     .character(ConfiguredCharacter.create(
                                     ConfigUtils.getFileInTheSameFolder(configFile, config.getString("image") + ".png"),
                                     config.getInt("ascent", 8),

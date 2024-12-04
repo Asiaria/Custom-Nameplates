@@ -2,21 +2,37 @@
 conditional-text:
   actionbar:
     priority_1:
-      text: '%np_background_other_actionbar%'
+      text: '%np_background_other_actionbar%' # hides the money hud when a player rides something or dives in water
       conditions:
-        '||':
-          '!=':
-            value1: '%player_remaining_air%'
-            value2: "300"
-          '!gamemode': survival
+        condition_or:
+          type: "||"
+          refresh-interval: 1
+          value:
+            condition_passenger:
+              type: is-passenger
+              refresh-interval: 1
+              value: true
+            condition_air:
+              type: "!="
+              refresh-interval: 1
+              value:
+                value1: '%player_remaining_air%'
+                value2: "300"
+            condition_gamemode:
+              type: "!gamemode"
+              refresh-interval: 1
+              value: survival
     priority_2:
-      text: '%np_static_money_hud%%np_offset_-179%%np_static_other_actionbar%'
+      text: '%np_static_money_hud%%np_offset_-179%%np_static_other_actionbar%' # displays the money hud + other plugin's actionbar message
       conditions:
-        '!equals':
-          value1: '%np_actionbar%'
-          value2: ""
+        condition_other_actionbar:
+          type: "!equals"
+          refresh-interval: 1
+          value:
+            value1: '%np_actionbar%'
+            value2: ""
     priority_3:
-      text: '%np_static_money_hud%'
+      text: '%np_static_money_hud%' # displays the money hud only
   weather:
     priority_1:
       text: 'Sunny'
@@ -130,30 +146,31 @@ switch-text:
     switch: "%np_equipped_nameplate%"
     default: ""
     case:
-      'wither': "<gradient:#FF0000:#000000:%np_gradient_3%>"
       'halloween': "<gradient:#FF0000:#000000:%np_gradient_3%>"
       'hutao': "<gradient:#FFFFFF:#FF4500:%np_gradient_3%>"
       'rabbit': "<gradient:#FFFFFF:#DB7093:%np_gradient_3%>"
       'starsky': "<gradient:#FFFFF0:#696969:%np_gradient_3%>"
       'trident': "<gradient:#E1FFFF:#008B8B:%np_gradient_10%>"
-      'cheems': "<gradient:#C0C0C0:#F5F5F5:%np_gradient_5%>"
       'egg': "<gradient:#FFFFFF:#FFA500:%np_gradient_5%>"
-      'cat': "<gradient:#FFFFFF:#1E90FF:%np_gradient_5%>"
-      'xmas': "<gradient:#FFFFFF:#FF4500:%np_gradient_5%>"
+      'xmas': "<WHITE>"
+      'angel': "<#8B4513>"
+      'sign': "<BLACK>"
+      'banner': "<WHITE>"
+      'enter': "<WHITE>"
   nameplate_color_suffix:
     switch: "%np_equipped_nameplate%"
     default: ""
     case:
-      'wither': "</gradient>"
       'halloween': "</gradient>"
       'hutao': "</gradient>"
       'rabbit': "</gradient>"
       'starsky': "</gradient>"
       'trident': "</gradient>"
-      'cheems': "</gradient>"
       'egg': "</gradient>"
-      'cat': "</gradient>"
-      'xmas': "</gradient>"
+      'xmas': "</WHITE>"
+      'angel': "</#8B4513>"
+      'sign': "</WHITE>"
+      'enter': "</WHITE>"
   world:
     switch: '%player_world%'
     case:

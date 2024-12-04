@@ -25,6 +25,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -292,8 +294,8 @@ public class AdvanceManagerImpl implements AdvanceManager {
     private final HashMap<String, BiConsumer<String, Section>> templateConfigConsumersMap = new HashMap<>();
 
     private final CustomNameplates plugin;
-    private final HashMap<String, CharacterFontAdvanceData> charFontWidthDataMap = new HashMap<>();
-    private final HashMap<String, ConfigurableFontAdvanceData> configFontWidthDataMap = new HashMap<>();
+    private final Object2ObjectOpenHashMap<String, CharacterFontAdvanceData> charFontWidthDataMap = new Object2ObjectOpenHashMap<>();
+    private final Object2ObjectOpenHashMap<String, ConfigurableFontAdvanceData> configFontWidthDataMap = new Object2ObjectOpenHashMap<>();
 
     private final Cache<String, Float> textWidthCache;
 
@@ -520,6 +522,8 @@ public class AdvanceManagerImpl implements AdvanceManager {
             String codePoints = requireNonNull(section.getString("codepoints", ""), "codepoints should be NonNull");
             int height = section.getInt("height", 8);
             boolean custom = section.getBoolean("custom", false);
+            boolean copy = section.getBoolean("generate", false);
+            String namespace = section.getString("namespace", ConfigManager.namespace());
 
             File bitmapCache = new File(plugin.getDataDirectory().toFile(), "tmp" + File.separator + id + ".tmp");
             if (!bitmapCache.exists()) {
@@ -584,9 +588,25 @@ public class AdvanceManagerImpl implements AdvanceManager {
             }
             registerCharacterFontData(id, bitmapCache, (properties) -> {
                 int ascent = (int) properties.get("shift_y");
-                String filePath = custom ? ConfigManager.namespace() + ":font/" +  file : "minecraft:font/" + codePoints + ".png";
+                String filePath = custom ? namespace + ":font/" + file : "minecraft:font/" + codePoints + ".png";
                 plugin.getConfigManager().saveResource("tmp/" + codePoints + ".json");
                 StringBuilder jsonContent = new StringBuilder();
+                if (copy) {
+                    File pngFile = new File(plugin.getDataDirectory().toFile(), "font" + File.separator + file);
+                    File destination = new File(plugin.getDataDirectory().toFile(),
+                            "ResourcePack"
+                                    + File.separator + "assets"
+                                    + File.separator + (custom ? namespace : "minecraft")
+                                    + File.separator + "textures"
+                                    + File.separator + "font"
+                                    + File.separator + (custom ? file : codePoints + ".png")
+                    );
+                    try {
+                        FileUtils.copyFile(pngFile, destination);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
                 try (BufferedReader reader = new BufferedReader(new FileReader(new File(plugin.getDataDirectory().toFile(), "tmp" + File.separator + codePoints + ".json")))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
@@ -787,11 +807,6 @@ public class AdvanceManagerImpl implements AdvanceManager {
                     plugin.getPluginLogger().warn(ttf.getAbsolutePath() + " is not a .ttf");
                     return;
                 }
-                if (true) {
-                    plugin.getPluginLogger().info("We're currently unable to obtain TTF advance");
-                    plugin.getPluginLogger().info("If you have Java knowledge and are interested in this, consider contributing if you have any progress.");
-                    return;
-                }
                 try (InputStream inputStream = new FileInputStream(ttf)) {
                     ByteBuffer byteBuffer = null;
                     FT_Face fT_Face = null;
@@ -936,7 +951,7 @@ public class AdvanceManagerImpl implements AdvanceManager {
                 .advance(dataMap)
                 .fontProviderFunction(function)
                 .build();
-        charFontWidthDataMap.put(id, fontWidthData);
+        this.charFontWidthDataMap.put(id, fontWidthData);
     }
 
     @Override
@@ -1024,8 +1039,8 @@ public class AdvanceManagerImpl implements AdvanceManager {
 
     @Override
     public void unload() {
+        this.textWidthCache.invalidateAll();
         this.configFontWidthDataMap.clear();
-        this.textWidthCache.cleanUp();
     }
 
     @Override
@@ -1221,15 +1236,17 @@ public class AdvanceManagerImpl implements AdvanceManager {
         return totalAdvance;
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     @Override
     public List<Tuple<String, Key, Boolean>> miniMessageToIterable(String text) {
         if (AdventureHelper.legacySupport) text = AdventureHelper.legacyToMiniMessage(text);
         ElementNode node = (ElementNode) AdventureHelper.miniMessage().deserializeToTree(text);
-        ArrayList<Tuple<String, Key, Boolean>> iterableTexts = new ArrayList<>();
+        List<Tuple<String, Key, Boolean>> iterableTexts = new ObjectArrayList<>();
         nodeToIterableTexts(node, iterableTexts, MINECRAFT_DEFAULT_FONT, false);
         return iterableTexts;
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     private void nodeToIterableTexts(ElementNode node, List<Tuple<String, Key, Boolean>> list, Key font, boolean bold) {
         if (node instanceof ValueNode valueNode) {
             String text = valueNode.value();

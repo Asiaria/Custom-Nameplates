@@ -17,7 +17,9 @@
 
 package net.momirealms.customnameplates.api.placeholder;
 
-import java.util.HashSet;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import net.momirealms.customnameplates.api.CustomNameplates;
+
 import java.util.Objects;
 import java.util.Set;
 
@@ -27,8 +29,8 @@ public abstract class AbstractPlaceholder implements Placeholder {
     protected int countId = PlaceholderCounter.getAndIncrease();
     protected int refreshInterval;
     protected PlaceholderManager manager;
-    protected Set<Placeholder> children = new HashSet<>();
-    protected Set<Placeholder> parents = new HashSet<>();
+    protected Set<Placeholder> children = new ObjectOpenHashSet<>();
+    protected Set<Placeholder> parents = new ObjectOpenHashSet<>();
 
     protected AbstractPlaceholder(PlaceholderManager manager, String id, int refreshInterval) {
         if (refreshInterval == 0) {
@@ -54,21 +56,37 @@ public abstract class AbstractPlaceholder implements Placeholder {
 
     @Override
     public void addChild(Placeholder placeholder) {
+        if (placeholder == this) {
+            CustomNameplates.getInstance().getPluginLogger().warn(String.format("There may be something wrong with your configuration. Placeholder relationship level loops. Placeholder %s becomes its own child Placeholder", id));
+            return;
+        }
         children.add(placeholder);
     }
 
     @Override
     public void addChildren(Set<Placeholder> placeholders) {
+        if (placeholders.contains(this)) {
+            CustomNameplates.getInstance().getPluginLogger().warn(String.format("There may be something wrong with your configuration. Placeholder relationship level loops. Placeholder %s becomes its own child Placeholder", id));
+            return;
+        }
         children.addAll(placeholders);
     }
 
     @Override
     public void addParent(Placeholder placeholder) {
+        if (placeholder == this) {
+            CustomNameplates.getInstance().getPluginLogger().warn(String.format("There may be something wrong with your configuration. Placeholder relationship level loops. Placeholder %s becomes its own parent Placeholder", id));
+            return;
+        }
         parents.add(placeholder);
     }
 
     @Override
     public void addParents(Set<Placeholder> placeholders) {
+        if (placeholders.contains(this)) {
+            CustomNameplates.getInstance().getPluginLogger().warn(String.format("There may be something wrong with your configuration. Placeholder relationship level loops. Placeholder %s becomes its own parent Placeholder", id));
+            return;
+        }
         parents.addAll(placeholders);
     }
 

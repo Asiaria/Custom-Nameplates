@@ -23,8 +23,10 @@ modules:
 integrations:
   resource-pack:
     ItemsAdder: false         # Integration with ItemsAdder
-    ItemsAdder-old-method: false # Old method for ItemsAdder
+    ItemsAdder-old-method: false # Legacy integration with ItemsAdder
     Oraxen: false             # Integration with Oraxen
+    Nexo: false               # Integration with Nexo
+    Creative-Central: false   # Integration with Creative-Central
   chat:
     TrChat: false             # Integration with TrChat
     VentureChat: false        # Integration with VentureChat
@@ -32,6 +34,8 @@ integrations:
     CarbonChat: false         # Integration with CarbonChat
     AdvancedChat: false       # Integration with AdvancedChat
     Essentials: false         # Integration with Essentials chat
+    ChatControlRed: false     # Integration with ChatControlRed
+    Chatty: false             # Integration with Chatty
 
 # Resource Pack Generation Settings: Configure resource pack generation behavior.
 resource-pack:
@@ -59,18 +63,19 @@ resource-pack:
 # Additional Settings: Extra options to control behavior and performance.
 other-settings:
   legacy-color-code-support: true     # Enable support for legacy color codes using &
-  send-delay: 20                      # Set actionbar/bossbar send delay (ticks)
+  send-delay: 20                      # Set actionbar/bossbar send delay (ticks)  (0 = send immediately on async threads, -1 = send immediately on main thread)
   catch-other-plugin-actionbar: true  # Capture actionbars from other plugins
   other-actionbar-stay-time: 3000     # How long does other actionsbars stay (ms)
   display-system-actionbar: true      # Should the plugin display system actionbar and temporarily hide the custom actionbar?
   hide-team-names: true               # Hide the team name sent by other plugins or vanilla team system
   unsafe-chat-event: false            # Listen for canceled(unsafe) chat events from unknown plugins
-  default-condition-refresh-interval: 1  # Set default condition refresh interval
-  default-placeholder-refresh-interval: 1  # Set default placeholder refresh interval
+  default-condition-refresh-interval: 10  # Set default condition refresh interval in ticks
+  default-placeholder-refresh-interval: 1  # Set default placeholder refresh interval in ticks
   placeholder-refresh-interval:       # Custom placeholder refresh intervals for performance optimization
     "%player_name%": 100
     "%vault_prefix%": 20
   # Font Templates: Define different fonts and their settings.
+  # Requires a restart to apply because it can be laggy to read thousands of character
   font-templates:
     space:
       space:
@@ -79,7 +84,7 @@ other-settings:
     unihex:
       unifont:
         file: unifont.zip             # Load font from unifont.zip
-        generate: false               # Don't include font in the generated resource pack
+        generate: false               # Should this unihex file be included in the generated pack
         size_overrides:               # Override size for specific Unicode ranges
           - from: "\\u3001"
             to: "\\u30FF"
@@ -119,7 +124,7 @@ other-settings:
             right: 15
       unifont_jp:
         file: unifont_jp.zip          # Load Japanese unifont
-        generate: false               # Don't generate in the resource pack
+        generate: false               # Should this unihex file be included in the generated pack
         filter:
           "jp": true                  # Apply to Japanese characters only
         size_overrides:
@@ -136,7 +141,9 @@ other-settings:
         codepoints: ascii             # Define ASCII bitmap font
         file: ascii.png               # Use ascii.png file for the font
         height: 8                     # Font height is 8 units
-        custom: false                 # Not a custom font (default Minecraft)
+        custom: false                 # Does this png path point to a non-default font path??
+        generate: false               # Should this png file be included in the generated pack
+        # namespace: custom           # Optional namespace if you don't want to use the global namespace set in config.yml
       ascii_sga:
         codepoints: ascii_sga
         file: ascii_sga.png
@@ -166,13 +173,14 @@ other-settings:
       unicode:
         file: unicode_page_%02x.png   # Default Unicode characters
         sizes: glyph_sizes.bin        # Glyph size configuration
-    ttf:
-      example:
-        generate: false               # Should this TTF file be included in the generated pack
-        file: example.ttf             # Define the TTF file to load the font from
-        size: 10.0                    # Set font size
-        oversample: 8.0               # Oversample rate for TTF rendering
-        skip: []                      # Skipped characters in list format
+    ttf: {}
+#    ttf:
+#      example:
+#        generate: false               # Should this TTF file be included in the generated pack
+#        file: example.ttf             # Define the TTF file to load the font from
+#        size: 10.0                    # Set font size
+#        oversample: 8.0               # Oversample rate for TTF rendering
+#        skip: []                      # Skipped characters in list format
   shift-fonts:
     shift_0:
       - space

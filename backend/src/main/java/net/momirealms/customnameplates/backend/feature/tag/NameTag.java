@@ -17,6 +17,7 @@
 
 package net.momirealms.customnameplates.backend.feature.tag;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.momirealms.customnameplates.api.CNPlayer;
 import net.momirealms.customnameplates.api.CustomNameplates;
 import net.momirealms.customnameplates.api.feature.CarouselText;
@@ -31,7 +32,6 @@ import net.momirealms.customnameplates.api.placeholder.Placeholder;
 import net.momirealms.customnameplates.api.util.Vector3;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -195,7 +195,7 @@ public class NameTag extends AbstractTag implements RelationalFeature {
 
     @Override
     public Set<Placeholder> allPlaceholders() {
-        HashSet<Placeholder> placeholders = new HashSet<>();
+        Set<Placeholder> placeholders = new ObjectOpenHashSet<>();
         for (CarouselText text : config.carouselTexts()) {
             placeholders.addAll(text.preParsedDynamicText().placeholders());
         }

@@ -17,6 +17,7 @@
 
 package net.momirealms.customnameplates.backend.feature.bossbar;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.momirealms.customnameplates.api.CNPlayer;
 import net.momirealms.customnameplates.api.CustomNameplates;
 import net.momirealms.customnameplates.api.feature.CarouselText;
@@ -28,7 +29,6 @@ import net.momirealms.customnameplates.api.helper.AdventureHelper;
 import net.momirealms.customnameplates.api.placeholder.Placeholder;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -163,7 +163,7 @@ public class BossBarSender implements Feature, BossBar {
 
     @Override
     public Set<Placeholder> allPlaceholders() {
-        HashSet<Placeholder> placeholders = new HashSet<>();
+        Set<Placeholder> placeholders = new ObjectOpenHashSet<>();
         for (CarouselText text : config.carouselTexts()) {
             placeholders.addAll(text.preParsedDynamicText().placeholders());
         }

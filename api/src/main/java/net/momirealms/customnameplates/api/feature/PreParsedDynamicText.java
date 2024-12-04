@@ -17,18 +17,23 @@
 
 package net.momirealms.customnameplates.api.feature;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.momirealms.customnameplates.api.CNPlayer;
 import net.momirealms.customnameplates.api.CustomNameplates;
 import net.momirealms.customnameplates.api.placeholder.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 
 public class PreParsedDynamicText {
 
     private final String text;
-    private final List<Function<CNPlayer, Function<CNPlayer, String>>> textFunctions = new ArrayList<>();
-    private final Set<Placeholder> set = new HashSet<>();
+    private final List<Function<CNPlayer, Function<CNPlayer, String>>> textFunctions = new ObjectArrayList<>();
+    private final Set<Placeholder> set = new ObjectOpenHashSet<>();
     private boolean init = false;
 
     public PreParsedDynamicText(String text) {
@@ -50,18 +55,24 @@ public class PreParsedDynamicText {
         for (String id : detectedPlaceholders) {
             Placeholder placeholder = manager.getPlaceholder(id);
             placeholders.add(placeholder);
-            if (placeholder instanceof RelationalPlaceholder) {
-                convertor.add((owner) -> (viewer) -> owner.getRelationalData(placeholder, viewer));
+            if (placeholder instanceof RelationalPlaceholder relationalPlaceholder) {
+                convertor.add((owner) -> (viewer) -> owner.getCachedRelationalValue(relationalPlaceholder, viewer));
             } else if (placeholder instanceof PlayerPlaceholder playerPlaceholder) {
                 convertor.add((owner) -> (viewer) -> {
                     if (owner != null) {
-                        return owner.getData(placeholder);
+                        return owner.getCachedPlayerValue(playerPlaceholder);
                     } else {
                         return playerPlaceholder.request(null);
                     }
                 });
             } else if (placeholder instanceof SharedPlaceholder sharedPlaceholder) {
-                convertor.add((owner) -> (viewer) -> sharedPlaceholder.getLatestValue());
+                convertor.add((owner) -> (viewer) -> {
+                    if (owner != null) {
+                        return owner.getCachedSharedValue(sharedPlaceholder);
+                    } else {
+                        return sharedPlaceholder.request();
+                    }
+                });
             } else {
                 convertor.add((owner) -> (viewer) -> id);
             }
@@ -86,12 +97,12 @@ public class PreParsedDynamicText {
             String remaining = original0.substring(lastIndex);
             textFunctions.add((owner) -> (viewer) -> remaining);
         }
-        // To optimize the tree height, call new HashSet twice here
-        set.addAll(new HashSet<>(placeholders));
+        // To optimize the tree height
+        set.addAll(new ObjectArrayList<>(placeholders));
     }
 
     public DynamicText fastCreate(CNPlayer player) {
-        List<Function<CNPlayer, String>> functions = new ArrayList<>();
+        List<Function<CNPlayer, String>> functions = new ObjectArrayList<>();
         for (Function<CNPlayer, Function<CNPlayer, String>> textFunction : textFunctions) {
             functions.add(textFunction.apply(player));
         }

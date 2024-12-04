@@ -17,6 +17,8 @@
 
 package net.momirealms.customnameplates.api;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.momirealms.customnameplates.api.feature.actionbar.ActionBarManager;
 import net.momirealms.customnameplates.api.feature.advance.AdvanceManager;
 import net.momirealms.customnameplates.api.feature.background.BackgroundManager;
@@ -27,6 +29,7 @@ import net.momirealms.customnameplates.api.feature.image.ImageManager;
 import net.momirealms.customnameplates.api.feature.nameplate.NameplateManager;
 import net.momirealms.customnameplates.api.feature.pack.ResourcePackManager;
 import net.momirealms.customnameplates.api.feature.tag.UnlimitedTagManager;
+import net.momirealms.customnameplates.api.helper.VersionHelper;
 import net.momirealms.customnameplates.api.network.PacketSender;
 import net.momirealms.customnameplates.api.network.PipelineInjector;
 import net.momirealms.customnameplates.api.placeholder.PlaceholderManager;
@@ -39,8 +42,6 @@ import net.momirealms.customnameplates.common.plugin.NameplatesPlugin;
 import net.momirealms.customnameplates.common.plugin.scheduler.SchedulerTask;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -69,7 +70,7 @@ public abstract class CustomNameplates implements NameplatesPlugin {
     protected MainTask mainTask;
     protected SchedulerTask scheduledMainTask;
     protected ConcurrentHashMap<UUID, CNPlayer> onlinePlayerMap = new ConcurrentHashMap<>();
-    protected HashMap<Integer, CNPlayer> entityIDFastLookup = new HashMap<>();
+    protected Int2ObjectOpenHashMap<CNPlayer> entityIDFastLookup = new Int2ObjectOpenHashMap<>();
     protected AdvanceManager advanceManager;
     protected BackgroundManager backgroundManager;
     protected EventManager eventManager;
@@ -80,6 +81,13 @@ public abstract class CustomNameplates implements NameplatesPlugin {
     protected NameplateManager nameplateManager;
     protected ResourcePackManager resourcePackManager;
     protected CustomNameplatesAPI api;
+
+    private String buildByBit = "%%__BUILTBYBIT__%%";
+    private String polymart = "%%__POLYMART__%%";
+    private String time = "%%__TIMESTAMP__%%";
+    private String user = "%%__USER__%%";
+    private String username = "%%__USERNAME__%%";
+    private boolean isLatest = false;
 
     protected CustomNameplates() {
         instance = this;
@@ -96,6 +104,36 @@ public abstract class CustomNameplates implements NameplatesPlugin {
      */
     @Override
     public abstract void disable();
+
+    @Override
+    public void enable() {
+        boolean downloadFromPolymart = polymart.equals("1");
+        boolean downloadFromBBB = buildByBit.equals("true");
+        if (ConfigManager.checkUpdate()) {
+            VersionHelper.UPDATE_CHECKER.apply(this).thenAccept(result -> {
+                String link;
+                if (downloadFromPolymart) {
+                    link = "https://polymart.org/resource/2543/";
+                } else if (downloadFromBBB) {
+                    link = "https://builtbybit.com/resources/36359/";
+                } else {
+                    link = "https://github.com/Xiao-MoMi/Custom-Nameplates/";
+                }
+                if (!result) {
+                    this.getPluginLogger().info("You are using the latest version.");
+                    isLatest = true;
+                } else {
+                    this.getPluginLogger().warn("Update is available: " + link);
+                    isLatest = false;
+                }
+            });
+        }
+    }
+
+    @Override
+    public boolean isUpToDate() {
+        return isLatest;
+    }
 
     /**
      * Logs debug messages through the provided supplier.
@@ -288,7 +326,7 @@ public abstract class CustomNameplates implements NameplatesPlugin {
      * @return a collection of {@link CNPlayer} instances
      */
     public Collection<CNPlayer> getOnlinePlayers() {
-        return new HashSet<>(onlinePlayerMap.values());
+        return new ObjectArrayList<>(onlinePlayerMap.values());
     }
 
     /**

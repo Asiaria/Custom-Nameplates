@@ -18,6 +18,7 @@
 package net.momirealms.customnameplates.backend.feature.nameplate;
 
 import dev.dejvokep.boostedyaml.YamlDocument;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.momirealms.customnameplates.api.CNPlayer;
 import net.momirealms.customnameplates.api.ConfigManager;
 import net.momirealms.customnameplates.api.CustomNameplates;
@@ -61,7 +62,7 @@ public class NameplateManagerImpl implements NameplateManager {
 
     @Override
     public Collection<Nameplate> nameplates() {
-        return new HashSet<>(nameplates.values());
+        return new ObjectArrayList<>(nameplates.values());
     }
 
     @Override
@@ -115,6 +116,7 @@ public class NameplateManagerImpl implements NameplateManager {
             Nameplate nameplate = Nameplate.builder()
                     .id(id)
                     .displayName(config.getString("display-name", id))
+                    .minWidth(config.getInt("min-width", 0))
                     .left(ConfiguredCharacter.create(
                             ConfigUtils.getFileInTheSameFolder(configFile, config.getString("left.image") + ".png"),
                             config.getInt("left.ascent", 12),
@@ -136,7 +138,7 @@ public class NameplateManagerImpl implements NameplateManager {
     }
 
     private void saveDefaultNameplates() {
-        String[] png_list = new String[]{"cat", "egg", "cheems", "wither", "xmas", "halloween", "hutao", "starsky", "trident", "rabbit"};
+        String[] png_list = new String[]{"egg", "xmas", "halloween", "hutao", "starsky", "trident", "rabbit", "sign", "game", "enter", "panda", "angel", "banner"};
         String[] part_list = new String[]{"_left.png", "_middle.png", "_right.png", ".yml"};
         for (String name : png_list) {
             for (String part : part_list) {

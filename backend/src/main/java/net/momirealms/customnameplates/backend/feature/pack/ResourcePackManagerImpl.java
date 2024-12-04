@@ -29,6 +29,7 @@ import net.momirealms.customnameplates.api.feature.OffsetFont;
 import net.momirealms.customnameplates.api.feature.advance.CharacterFontAdvanceData;
 import net.momirealms.customnameplates.api.feature.background.Background;
 import net.momirealms.customnameplates.api.feature.bubble.Bubble;
+import net.momirealms.customnameplates.api.feature.image.Animation;
 import net.momirealms.customnameplates.api.feature.image.Image;
 import net.momirealms.customnameplates.api.feature.nameplate.Nameplate;
 import net.momirealms.customnameplates.api.feature.pack.ResourcePackManager;
@@ -70,10 +71,18 @@ public class ResourcePackManagerImpl implements ResourcePackManager {
         this.saveLegacyUnicodes();
 
         if (ConfigManager.enableShader()) {
-            if (!VersionHelper.isVersionNewerThan1_20_5()) {
-                this.generateShaders("ResourcePack" + File.separator + "assets" + File.separator + "minecraft" + File.separator + "shaders" + File.separator + "core" + File.separator, false);
-                this.generateShaders("ResourcePack" + File.separator + "overlay_1_20_5" + File.separator + "assets" + File.separator + "minecraft" + File.separator + "shaders" + File.separator + "core" + File.separator, true);
-            } else {
+            if (VersionHelper.isVersionNewerThan1_21_2()) {
+                this.generateShaders("ResourcePack" + File.separator + "overlay_1_21_2" + File.separator + "assets" + File.separator + "minecraft" + File.separator + "shaders" + File.separator + "core" + File.separator, true);
+                try {
+                    FileUtils.copyDirectory(
+                            new File(plugin.getDataFolder(), "ResourcePack" + File.separator + "overlay_1_21_2"),
+                            new File(plugin.getDataFolder(), "ResourcePack")
+                    );
+                    FileUtils.deleteDirectory(new File(plugin.getDataFolder(), "ResourcePack" + File.separator + "overlay_1_21_2"));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } else if (VersionHelper.isVersionNewerThan1_20_5()) {
                 this.generateShaders("ResourcePack" + File.separator + "overlay_1_20_5" + File.separator + "assets" + File.separator + "minecraft" + File.separator + "shaders" + File.separator + "core" + File.separator, true);
                 try {
                     FileUtils.copyDirectory(
@@ -84,6 +93,11 @@ public class ResourcePackManagerImpl implements ResourcePackManager {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+                this.generateShaders("ResourcePack" + File.separator + "overlay_1_21_2" + File.separator + "assets" + File.separator + "minecraft" + File.separator + "shaders" + File.separator + "core" + File.separator, true);
+            } else {
+                this.generateShaders("ResourcePack" + File.separator + "assets" + File.separator + "minecraft" + File.separator + "shaders" + File.separator + "core" + File.separator, false);
+                this.generateShaders("ResourcePack" + File.separator + "overlay_1_20_5" + File.separator + "assets" + File.separator + "minecraft" + File.separator + "shaders" + File.separator + "core" + File.separator, true);
+                this.generateShaders("ResourcePack" + File.separator + "overlay_1_21_2" + File.separator + "assets" + File.separator + "minecraft" + File.separator + "shaders" + File.separator + "core" + File.separator, true);
             }
         }
 
@@ -174,7 +188,11 @@ public class ResourcePackManagerImpl implements ResourcePackManager {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private void setPackFormat() {
-        if (VersionHelper.isVersionNewerThan1_20_5()) {
+        if (VersionHelper.isVersionNewerThan1_21_2()) {
+            plugin.getConfigManager().saveResource("ResourcePack" + File.separator + "pack_1_21_2.mcmeta");
+            File file = new File(plugin.getDataFolder(), "ResourcePack" + File.separator + "pack_1_21_2.mcmeta");
+            file.renameTo(new File(plugin.getDataFolder(), "ResourcePack" + File.separator + "pack.mcmeta"));
+        } else if (VersionHelper.isVersionNewerThan1_20_5()) {
             plugin.getConfigManager().saveResource("ResourcePack" + File.separator + "pack_1_20_5.mcmeta");
             File file = new File(plugin.getDataFolder(), "ResourcePack" + File.separator + "pack_1_20_5.mcmeta");
             file.renameTo(new File(plugin.getDataFolder(), "ResourcePack" + File.separator + "pack.mcmeta"));
@@ -216,6 +234,20 @@ public class ResourcePackManagerImpl implements ResourcePackManager {
                 FileUtils.copyDirectory(new File(resourcePackFolder, "assets"), new File(pluginsFolder, "Oraxen" + File.separator + "pack" + File.separator + "assets"));
             } catch (IOException e){
                 plugin.getPluginLogger().warn("Failed to copy files to Oraxen", e);
+            }
+        }
+        if (ConfigManager.packNexo()){
+            try {
+                FileUtils.copyDirectory(new File(resourcePackFolder, "assets"), new File(pluginsFolder, "Nexo" + File.separator + "pack" + File.separator + "assets"));
+            } catch (IOException e){
+                plugin.getPluginLogger().warn("Failed to copy files to Nexo", e);
+            }
+        }
+        if(ConfigManager.packCreativeCentral()) {
+            try {
+                FileUtils.copyDirectory(new File(resourcePackFolder, "assets"), new File(pluginsFolder, "creative-central" + File.separator + "resources" + File.separator + "assets"));
+            } catch (IOException e){
+                plugin.getPluginLogger().warn("Failed to copy files to Creative-Central", e);
             }
         }
     }
@@ -297,11 +329,53 @@ public class ResourcePackManagerImpl implements ResourcePackManager {
             jo.add("chars", ja);
             list.add(jo);
             try {
+                File targetFile = new File(texturesFolder,
+                        ConfigManager.imagePath().replace("\\", File.separator) + character.imageFile().getName());
                 FileUtils.copyFile(
                         new File(plugin.getDataFolder(),
-                                "contents" + File.separator + "images" + File.separator + character.imageFile().getName()),
-                        new File(texturesFolder,
-                                ConfigManager.imagePath().replace("\\", File.separator) + character.imageFile().getName()));
+                                "contents" + File.separator + "images" + File.separator + character.imageFile().getName()), targetFile);
+                if (image.removeShadow() || image.animation() != null) {
+                    BufferedImage bufferedImage = ImageIO.read(targetFile);
+                    if (image.removeShadow()) {
+                        for (int y = 0; y < bufferedImage.getHeight(); y++) {
+                            for (int x = 0; x < bufferedImage.getWidth(); x++) {
+                                int argb = bufferedImage.getRGB(x, y);
+                                int alpha = (argb >> 24) & 0xff;
+                                if (alpha != 0) {
+                                    int rgb = argb & 0x00ffffff;
+                                    int newArgb = (254 << 24) | rgb;
+                                    bufferedImage.setRGB(x, y, newArgb);
+                                }
+                            }
+                        }
+                    }
+
+                    Animation animation = image.animation();
+                    if (animation != null) {
+                        int height = bufferedImage.getHeight();
+                        int extra = height % animation.frames();
+                        if (extra > 0) {
+                            plugin.getPluginLogger().warn("Image height is not a multiple of frame rate: " + image.id());
+                            continue;
+                        }
+                        int eachFrameHeight = height / animation.frames();
+                        int width = bufferedImage.getWidth();
+                        int speed = Math.min(Math.max(animation.speed(), 1), 255);
+
+                        int alpha = 1;
+                        int red = speed;
+                        int green = width;
+                        int blue = eachFrameHeight;
+                        int argb = (alpha << 24) | (red << 16) | (green << 8) | blue;
+
+                        for (int i = 0; i < animation.frames(); i++) {
+                            int y = i * eachFrameHeight;
+                            bufferedImage.setRGB(0, y, argb);
+                        }
+                    }
+
+                    ImageIO.write(bufferedImage, "png", targetFile);
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -559,6 +633,7 @@ public class ResourcePackManagerImpl implements ResourcePackManager {
                         "        vertexColor = ((.6 + .6 * cos(6. * (gl_Position.x + GameTime * 1000.) + vec4(0, 23, 21, 1))) + vec4(0., 0., 0., 1.)) * texelFetch(Sampler2, UV2 / 16, 0);\n" +
                         "        gl_Position = ProjMat * ModelViewMat * vertex;\n" +
                         "    } else ";
+
         public static final String Hide_ScoreBoard_Numbers =
                         "\n" +
                         "    if (Position.z == 0.0\n" +

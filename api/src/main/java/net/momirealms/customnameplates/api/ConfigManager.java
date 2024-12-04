@@ -102,6 +102,8 @@ public abstract class ConfigManager implements ConfigLoader, Reloadable {
     protected boolean packItemsAdder;
     protected boolean packItemsAdderLegacy;
     protected boolean packOraxen;
+    protected boolean packNexo;
+    protected boolean packCreativeCentral;
 
     protected boolean chatUnsafe;
     protected boolean chatTR;
@@ -110,6 +112,8 @@ public abstract class ConfigManager implements ConfigLoader, Reloadable {
     protected boolean chatCarbon;
     protected boolean chatAdvanced;
     protected boolean chatEss;
+    protected boolean chatChatControlRed;
+    protected boolean chatChatty;
 
     protected String configVersion;
 
@@ -179,6 +183,8 @@ public abstract class ConfigManager implements ConfigLoader, Reloadable {
         packItemsAdderLegacy = config.getBoolean("integrations.resource-pack.ItemsAdder-old-method", false);
         if (packItemsAdder) packItemsAdderLegacy = false;
         packOraxen = config.getBoolean("integrations.resource-pack.Oraxen", false);
+        packCreativeCentral = config.getBoolean("integrations.resource-pack.Creative-Central");
+        packNexo = config.getBoolean("integrations.resource-pack.Nexo");
 
         chatUnsafe = config.getBoolean("other-settings.unsafe-chat-event", false);
         chatEss = config.getBoolean("integrations.chat.Essentials", false);
@@ -187,6 +193,8 @@ public abstract class ConfigManager implements ConfigLoader, Reloadable {
         chatAdvanced = config.getBoolean("integrations.chat.AdvancedChat", false);
         chatTR = config.getBoolean("integrations.chat.TrChat", false);
         chatVenture = config.getBoolean("integrations.chat.VentureChat", false);
+        chatChatControlRed = config.getBoolean("integrations.chat.ChatControlRed", false);
+        chatChatty = config.getBoolean("integrations.chat.Chatty", false);
 
         // Packs
         generateOnStart = !config.getBoolean("resource-pack.disable-generation-on-start", false);
@@ -215,7 +223,7 @@ public abstract class ConfigManager implements ConfigLoader, Reloadable {
         // Other settings
         delaySend = config.getInt("other-settings.send-delay", 0);
         defaultPlaceholderRefreshInterval = config.getInt("other-settings.default-placeholder-refresh-interval", 1);
-        defaultConditionRefreshInterval = config.getInt("other-settings.ddefault-condition-refresh-interval", 1);
+        defaultConditionRefreshInterval = config.getInt("other-settings.default-condition-refresh-interval", 20);
         catchOtherActionBar = config.getBoolean("other-settings.catch-other-plugin-actionbar", true);
         otherActionBarStayTime = config.getInt("other-settings.other-actionbar-stay-time", 3000);
         displaySystemChat = config.getBoolean("other-settings.display-system-actionbar", true);
@@ -302,6 +310,12 @@ public abstract class ConfigManager implements ConfigLoader, Reloadable {
     public static boolean packOraxen() {
         return instance.packOraxen;
     }
+
+    public static boolean packNexo() {
+        return instance.packNexo;
+    }
+
+    public static boolean packCreativeCentral() { return instance.packCreativeCentral; }
 
     public static boolean hideScoreBoardNumber() {
         return instance.hideScoreBoardNumber;
@@ -405,6 +419,14 @@ public abstract class ConfigManager implements ConfigLoader, Reloadable {
 
     public static boolean chatAdvanced() {
         return instance.chatAdvanced;
+    }
+
+    public static boolean chatChatControlRed() {
+        return instance.chatChatControlRed;
+    }
+
+    public static boolean chatChatty() {
+        return instance.chatChatty;
     }
 
     @Override
