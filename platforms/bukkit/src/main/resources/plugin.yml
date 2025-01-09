@@ -9,6 +9,7 @@ softdepend:
   - MagicCosmetics
   - ItemsAdder
   - Oraxen
+  - CraftEngine
   - TrChat
   - CarbonChat
   - HuskChat
@@ -17,6 +18,7 @@ softdepend:
   - EssentialsChat
   - ChatControlRed
   - WorldGuard
+  - Typewriter
 permissions:
   nameplates.command.equip:
     default: true

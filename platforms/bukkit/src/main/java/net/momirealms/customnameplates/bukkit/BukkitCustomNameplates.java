@@ -40,6 +40,7 @@ import net.momirealms.customnameplates.bukkit.command.BukkitCommandManager;
 import net.momirealms.customnameplates.bukkit.compatibility.NameplatesExpansion;
 import net.momirealms.customnameplates.bukkit.compatibility.NameplatesExtraExpansion;
 import net.momirealms.customnameplates.bukkit.compatibility.cosmetic.MagicCosmeticsHook;
+import net.momirealms.customnameplates.bukkit.compatibility.quest.TypeWriterListener;
 import net.momirealms.customnameplates.bukkit.compatibility.region.WorldGuardRegion;
 import net.momirealms.customnameplates.bukkit.requirement.BukkitRequirementManager;
 import net.momirealms.customnameplates.bukkit.scheduler.BukkitSchedulerAdapter;
@@ -203,6 +204,10 @@ public class BukkitCustomNameplates extends CustomNameplates implements Listener
             } catch (Exception ignore) {
             }
         }
+        if (Bukkit.getPluginManager().isPluginEnabled("Typewriter")) {
+            TypeWriterListener listener = new TypeWriterListener(this);
+            Bukkit.getPluginManager().registerEvents(listener, this.getBootstrap());
+        }
 
         if (VersionHelper.isFolia()) {
             this.foliaTrackerTask = getScheduler().asyncRepeating(() -> {
@@ -309,7 +314,6 @@ public class BukkitCustomNameplates extends CustomNameplates implements Listener
         // run task
         this.scheduledMainTask = getScheduler().asyncRepeating(mainTask, 50, 50, TimeUnit.MILLISECONDS);
     }
-
 
     @Override
     public InputStream getResourceStream(String filePath) {

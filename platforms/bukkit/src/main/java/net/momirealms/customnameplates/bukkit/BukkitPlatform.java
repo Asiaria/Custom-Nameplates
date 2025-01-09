@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
 
 public class BukkitPlatform implements Platform {
 
-    private static final Pattern LANG_PATTERN = Pattern.compile("<lang:[a-zA-Z0-9._/]+>");
+    private static final Pattern LANG_PATTERN = Pattern.compile("<lang:[a-zA-Z0-9._/':-]+/?>");
 
     private final CustomNameplates plugin;
     private final boolean placeholderAPI;
@@ -98,8 +98,10 @@ public class BukkitPlatform implements Platform {
         registerPacketConsumer((player, event, packet) -> {
             if (!ConfigManager.actionbarModule()) return;
             if (!ConfigManager.catchOtherActionBar()) return;
+            if (!player.shouldCNTakeOverActionBar()) return;
             try {
-                Object component = Reflections.field$ClientboundSetActionBarTextPacket$text.get(packet);
+                // some plugins would send null to clear the actionbar, what a bad solution
+                Object component = Optional.ofNullable(Reflections.field$ClientboundSetActionBarTextPacket$text.get(packet)).orElse(Reflections.instance$Component$empty);
                 Object contents = Reflections.method$Component$getContents.invoke(component);
                 if (Reflections.clazz$ScoreContents.isAssignableFrom(contents.getClass())) {
                     //String name = scoreContentNameFunction.apply(Reflections.field$ScoreContents$name.get(contents));
@@ -118,6 +120,7 @@ public class BukkitPlatform implements Platform {
         registerPacketConsumer((player, event, packet) -> {
             if (!ConfigManager.actionbarModule()) return;
             if (!ConfigManager.catchOtherActionBar()) return;
+            if (!player.shouldCNTakeOverActionBar()) return;
             try {
             boolean actionBar = (boolean) Reflections.field$ClientboundSystemChatPacket$overlay.get(packet);
                 if (actionBar) {

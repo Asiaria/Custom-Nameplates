@@ -22,6 +22,7 @@ modules:
 # Plugin Integrations: Integrate resource packs and chat plugins with other plugins.
 integrations:
   resource-pack:
+    CraftEngine: false        # Integration with CraftEngine
     ItemsAdder: false         # Integration with ItemsAdder
     ItemsAdder-old-method: false # Legacy integration with ItemsAdder
     Oraxen: false             # Integration with Oraxen
@@ -36,6 +37,10 @@ integrations:
     Essentials: false         # Integration with Essentials chat
     ChatControlRed: false     # Integration with ChatControlRed
     Chatty: false             # Integration with Chatty
+  # Let typewriter take over actionbar on certain events
+  typewriter:
+    dialogue: true
+    cinematic: true
 
 # Resource Pack Generation Settings: Configure resource pack generation behavior.
 resource-pack:

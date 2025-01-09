@@ -35,13 +35,13 @@ import net.momirealms.customnameplates.api.feature.nameplate.Nameplate;
 import net.momirealms.customnameplates.api.feature.pack.ResourcePackManager;
 import net.momirealms.customnameplates.api.helper.VersionHelper;
 import net.momirealms.customnameplates.api.util.CharacterUtils;
+import net.momirealms.customnameplates.api.util.ZipUtils;
 import org.apache.commons.io.FileUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.*;
 
 public class ResourcePackManagerImpl implements ResourcePackManager {
@@ -124,6 +124,12 @@ public class ResourcePackManagerImpl implements ResourcePackManager {
         this.setPackFormat();
         // copy the resource pack to hooked plugins
         this.copyResourcePackToHookedPlugins(resourcePackFolder);
+
+        try {
+            ZipUtils.zipDirectory(resourcePackFolder.toPath(), plugin.getDataFolder().toPath().resolve("resourcepack.zip"));
+        } catch (IOException e) {
+            plugin.getPluginLogger().warn("Failed to zip resourcepack.zip", e);
+        }
     }
 
     private void saveFont(JsonObject fontJson) {
@@ -243,6 +249,16 @@ public class ResourcePackManagerImpl implements ResourcePackManager {
                 FileUtils.copyDirectory(resourcePackFolder, new File(pluginsFolder, "Nexo" + File.separator + "pack" + File.separator + "external_packs" + File.separator + "CustomNameplates"));
             } catch (IOException e){
                 plugin.getPluginLogger().warn("Failed to copy files to Nexo", e);
+            }
+        }
+        if (ConfigManager.packCraftEngine()){
+            try {
+                FileUtils.deleteDirectory(new File(pluginsFolder, "CraftEngine" + File.separator + "resources" + File.separator + "nameplates"));
+                FileUtils.copyDirectory(resourcePackFolder, new File(pluginsFolder, "CraftEngine" + File.separator + "resources" + File.separator + "CustomNameplates" + File.separator + "resourcepack"));
+                FileUtils.delete(new File(pluginsFolder, "CraftEngine" + File.separator + "resources" + File.separator + "CustomNameplates" + File.separator + "resourcepack" + File.separator + "pack.mcmeta"));
+                FileUtils.delete(new File(pluginsFolder, "CraftEngine" + File.separator + "resources" + File.separator + "CustomNameplates" + File.separator + "resourcepack" + File.separator + "pack.png"));
+            } catch (IOException e){
+                plugin.getPluginLogger().warn("Failed to copy files to CraftEngine", e);
             }
         }
         if(ConfigManager.packCreativeCentral()) {

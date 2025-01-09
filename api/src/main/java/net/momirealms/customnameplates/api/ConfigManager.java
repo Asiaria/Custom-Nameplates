@@ -104,6 +104,7 @@ public abstract class ConfigManager implements ConfigLoader, Reloadable {
     protected boolean packOraxen;
     protected boolean packNexo;
     protected boolean packCreativeCentral;
+    protected boolean packCraftEngine;
 
     protected boolean chatUnsafe;
     protected boolean chatTR;
@@ -114,6 +115,9 @@ public abstract class ConfigManager implements ConfigLoader, Reloadable {
     protected boolean chatEss;
     protected boolean chatChatControlRed;
     protected boolean chatChatty;
+
+    protected boolean twDialogue;
+    protected boolean twCinematic;
 
     protected String configVersion;
 
@@ -185,6 +189,7 @@ public abstract class ConfigManager implements ConfigLoader, Reloadable {
         packOraxen = config.getBoolean("integrations.resource-pack.Oraxen", false);
         packCreativeCentral = config.getBoolean("integrations.resource-pack.Creative-Central");
         packNexo = config.getBoolean("integrations.resource-pack.Nexo");
+        packCraftEngine = config.getBoolean("integrations.resource-pack.CraftEngine", false);
 
         chatUnsafe = config.getBoolean("other-settings.unsafe-chat-event", false);
         chatEss = config.getBoolean("integrations.chat.Essentials", false);
@@ -195,6 +200,9 @@ public abstract class ConfigManager implements ConfigLoader, Reloadable {
         chatVenture = config.getBoolean("integrations.chat.VentureChat", false);
         chatChatControlRed = config.getBoolean("integrations.chat.ChatControlRed", false);
         chatChatty = config.getBoolean("integrations.chat.Chatty", false);
+
+        twDialogue = config.getBoolean("integrations.typewriter.dialogue", true);
+        twCinematic = config.getBoolean("integrations.typewriter.cinematic", true);
 
         // Packs
         generateOnStart = !config.getBoolean("resource-pack.disable-generation-on-start", false);
@@ -315,6 +323,10 @@ public abstract class ConfigManager implements ConfigLoader, Reloadable {
         return instance.packNexo;
     }
 
+    public static boolean packCraftEngine() {
+        return instance.packCraftEngine;
+    }
+
     public static boolean packCreativeCentral() { return instance.packCreativeCentral; }
 
     public static boolean hideScoreBoardNumber() {
@@ -363,6 +375,14 @@ public abstract class ConfigManager implements ConfigLoader, Reloadable {
 
     public static boolean metrics() {
         return instance.metrics;
+    }
+
+    public static boolean twDialogue() {
+        return instance.twDialogue;
+    }
+
+    public static boolean twCinematic() {
+        return instance.twCinematic;
     }
 
     public static int defaultPlaceholderRefreshInterval() {
