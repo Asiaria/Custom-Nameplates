@@ -30,14 +30,16 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * CustomNameplatesAPI
+ */
 public record CustomNameplatesAPI(CustomNameplates plugin) {
-
-    private static CustomNameplatesAPI instance;
-
     public CustomNameplatesAPI(CustomNameplates plugin) {
         this.plugin = plugin;
         instance = this;
     }
+
+    private static CustomNameplatesAPI instance;
 
     /**
      * Gets the CustomNameplates plugin instance.
@@ -108,7 +110,7 @@ public record CustomNameplatesAPI(CustomNameplates plugin) {
             text = AdventureHelper.legacyToMiniMessage(text);
         }
         float advance = plugin.getAdvanceManager().getLineAdvance(text);
-        return adaptiveImage.createImagePrefix(advance, leftMargin, rightMargin) + text + adaptiveImage.createImageSuffix(advance, leftMargin, rightMargin);
+        return AdventureHelper.surroundWithNameplatesFont(adaptiveImage.createImagePrefix(advance, leftMargin, rightMargin)) + text + AdventureHelper.surroundWithNameplatesFont(adaptiveImage.createImageSuffix(advance, leftMargin, rightMargin));
     }
 
     /**

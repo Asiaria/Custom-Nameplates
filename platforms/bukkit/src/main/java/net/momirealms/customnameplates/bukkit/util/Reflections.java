@@ -274,7 +274,7 @@ public class Reflections {
         try {
             Field field = ReflectionUtils.getDeclaredField(
                     clazz$ClientboundBossEventPacket,
-                    "f", "REMOVE_OPERATION");
+                    VersionHelper.isVersionNewerThan1_20_5() ? "g" : "f", "REMOVE_OPERATION");
             field.setAccessible(true);
             instance$ClientboundBossEventPacket$REMOVE_OPERATION = requireNonNull(field.get(null));
         } catch (IllegalAccessException e) {
@@ -1097,4 +1097,37 @@ public class Reflections {
         }
         field$ServerConnectionListener$channels = requireNonNull(f);
     }
+
+    public static final Class<?> clazz$AttributeModifier$Operation = requireNonNull(
+            ReflectionUtils.getClazz(
+                    BukkitReflectionUtils.assembleMCClass("world.entity.ai.attributes.AttributeModifier$Operation")
+            )
+    );
+
+    public static final Method method$AttributeModifier$Operation$values = requireNonNull(
+            ReflectionUtils.getStaticMethod(
+                    clazz$AttributeModifier$Operation, clazz$AttributeModifier$Operation.arrayType()
+            )
+    );
+
+    public static final Object instance$AttributeModifier$Operation$ADD_VALUE;
+    public static final Object instance$AttributeModifier$Operation$ADD_MULTIPLIED_BASE;
+    public static final Object instance$AttributeModifier$Operation$ADD_MULTIPLIED_TOTAL;
+
+    static {
+        try {
+            Object[] values = (Object[]) method$AttributeModifier$Operation$values.invoke(null);
+            instance$AttributeModifier$Operation$ADD_VALUE = values[0];
+            instance$AttributeModifier$Operation$ADD_MULTIPLIED_BASE = values[1];
+            instance$AttributeModifier$Operation$ADD_MULTIPLIED_TOTAL = values[2];
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    public static final Field field$AttributeModifier$operation = requireNonNull(
+            ReflectionUtils.getDeclaredField(
+                    clazz$AttributeModifier, clazz$AttributeModifier$Operation, 0
+            )
+    );
 }

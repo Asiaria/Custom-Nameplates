@@ -39,19 +39,31 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * Player instance adapted by CustomNameplates
+ */
 public abstract class AbstractCNPlayer implements CNPlayer {
-
+    /**
+     * The CustomNameplates plugin
+     */
     protected final CustomNameplates plugin;
+    /**
+     * Player netty channel
+     */
     protected final Channel channel;
-
+    /**
+     * Platform player instance
+     */
     protected Object player;
 
     private volatile boolean isLoaded = false;
     private volatile boolean tempPreviewing = false;
     private volatile boolean toggleablePreviewing = false;
 
-    private String equippedNameplate;
-    private String equippedBubble;
+    private String currentNameplate;
+    private String nameplateData;
+    private String currentBubble;
+    private String bubbleData;
 
     private final TeamView teamView = new TeamView();
 
@@ -67,8 +79,14 @@ public abstract class AbstractCNPlayer implements CNPlayer {
 
     private final Map<CNPlayer, Tracker> trackers = new WeakHashMap<>();
     private final ReadWriteLock trackerLock = new ReentrantReadWriteLock();
-    private final List<String> otherActionBarFeatures = new ArrayList<>();
+    private final Vector<String> otherActionBarFeatures = new Vector<>();
 
+    /**
+     * Creates a player instance
+     *
+     * @param plugin CustomNameplates plugin
+     * @param channel netty channel
+     */
     protected AbstractCNPlayer(CustomNameplates plugin, Channel channel) {
         this.plugin = plugin;
         this.channel = channel;
@@ -202,6 +220,9 @@ public abstract class AbstractCNPlayer implements CNPlayer {
         }
     }
 
+    /**
+     * Reload the player instance, clear caches
+     */
     public void reload() {
         cachedValues.clear();
         cachedRelationalValues.clear();
@@ -212,6 +233,11 @@ public abstract class AbstractCNPlayer implements CNPlayer {
         feature2Placeholders.clear();
     }
 
+    /**
+     * Sets the platform player instance on join
+     *
+     * @param player player
+     */
     public void setPlayer(Object player) {
         this.player = player;
     }
@@ -231,10 +257,20 @@ public abstract class AbstractCNPlayer implements CNPlayer {
         return player;
     }
 
+    /**
+     * Sets if the player data is loaded
+     *
+     * @param loaded loaded or not
+     */
     public void setLoaded(boolean loaded) {
         isLoaded = loaded;
     }
 
+    /**
+     * Sets if the player is temporarily previewing the nameplate
+     *
+     * @param previewing is previewing or not
+     */
     public void setTempPreviewing(boolean previewing) {
         this.tempPreviewing = previewing;
     }
@@ -244,6 +280,11 @@ public abstract class AbstractCNPlayer implements CNPlayer {
         return tempPreviewing;
     }
 
+    /**
+     * Sets if the player is using toggle command to preview his nameplate
+     *
+     * @param previewing is previewing or not
+     */
     public void setToggleablePreviewing(boolean previewing) {
         this.toggleablePreviewing = previewing;
     }
@@ -541,32 +582,57 @@ public abstract class AbstractCNPlayer implements CNPlayer {
     }
 
     @Override
-    public String equippedBubble() {
-        if (equippedNameplate == null) return "none";
-        return equippedBubble;
+    public String currentBubble() {
+        if (currentNameplate == null) return "none";
+        return currentBubble;
     }
 
     @Override
-    public boolean equippedBubble(String equippedBubble) {
+    public boolean setCurrentBubble(String bubble) {
         if (!isLoaded()) return false;
-        if (!equippedBubble.equals(this.equippedBubble)) {
-            this.equippedBubble = equippedBubble;
+        this.currentBubble = bubble;
+        return true;
+    }
+
+    @Override
+    public String bubbleData() {
+        if (bubbleData == null) return "none";
+        return bubbleData;
+    }
+
+    @Override
+    public boolean setBubbleData(String bubble) {
+        if (!isLoaded()) return false;
+        this.currentBubble = bubble;
+        this.bubbleData = bubble;
+        return true;
+    }
+
+    @Override
+    public String currentNameplate() {
+        if (currentNameplate == null) return "none";
+        return currentNameplate;
+    }
+
+    @Override
+    public boolean setCurrentNameplate(String nameplate) {
+        if (!isLoaded()) return false;
+        if (!nameplate.equals(this.currentNameplate)) {
+            this.currentNameplate = nameplate;
         }
         return true;
     }
 
     @Override
-    public String equippedNameplate() {
-        if (equippedNameplate == null) return "none";
-        return equippedNameplate;
+    public String nameplateData() {
+        return nameplateData;
     }
 
     @Override
-    public boolean equippedNameplate(String equippedNameplate) {
+    public boolean setNameplateData(String nameplate) {
         if (!isLoaded()) return false;
-        if (!equippedNameplate.equals(this.equippedNameplate)) {
-            this.equippedNameplate = equippedNameplate;
-        }
+        this.nameplateData = nameplate;
+        this.currentNameplate = nameplate;
         return true;
     }
 
@@ -574,8 +640,8 @@ public abstract class AbstractCNPlayer implements CNPlayer {
     public void save() {
         plugin.getStorageManager().dataSource().updatePlayerData(PlayerData.builder()
                 .uuid(uuid())
-                .nameplate(equippedNameplate())
-                .bubble(equippedBubble())
+                .nameplate(nameplateData())
+                .bubble(bubbleData())
                 .previewTags(isToggleablePreviewing())
                 .build(), plugin.getScheduler().async());
     }
