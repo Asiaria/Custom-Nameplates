@@ -19,6 +19,7 @@ package net.momirealms.customnameplates.bukkit;
 
 import net.momirealms.customnameplates.api.ConfigManager;
 import net.momirealms.customnameplates.api.CustomNameplates;
+import net.momirealms.customnameplates.api.helper.VersionHelper;
 import net.momirealms.customnameplates.backend.feature.chat.AbstractChatManager;
 import net.momirealms.customnameplates.bukkit.compatibility.chat.*;
 import net.momirealms.customnameplates.bukkit.compatibility.emoji.ItemsAdderEmojiProvider;
@@ -51,12 +52,14 @@ public class BukkitChatManager extends AbstractChatManager {
         } else if (ConfigManager.chatEss() && Bukkit.getPluginManager().isPluginEnabled("EssentialsChat")) {
             this.chatProvider = new EssentialsChatProvider(plugin, this);
             plugin.getPluginLogger().info("EssentialsChat hooked!");
-        } else if (ConfigManager.chatChatControlRed() && Bukkit.getPluginManager().isPluginEnabled("ChatControlRed")) {
+        } else if (ConfigManager.chatChatControlRed() && Bukkit.getPluginManager().isPluginEnabled("ChatControl")) {
             this.chatProvider = new ChatControlRedProvider(plugin, this);
-            plugin.getPluginLogger().info("ChatControlRed hooked!");
+            plugin.getPluginLogger().info("ChatControl hooked!");
         } else if (ConfigManager.chatChatty() && Bukkit.getPluginManager().isPluginEnabled("Chatty")) {
             this.chatProvider = new ChattyProvider(plugin, this);
             plugin.getPluginLogger().info("Chatty hooked!");
+        } else if (VersionHelper.isPaperOrItsForks()) {
+            this.chatProvider = new PaperAsyncChatProvider(plugin, this);
         } else {
             this.chatProvider = new AsyncChatProvider(plugin, this);
         }
@@ -64,10 +67,11 @@ public class BukkitChatManager extends AbstractChatManager {
 
     @Override
     protected void setUpPlatformEmojiProviders() {
-        if (Bukkit.getPluginManager().isPluginEnabled("ItemsAdder")) {
+        if (Bukkit.getPluginManager().getPlugin("ItemsAdder") != null) {
             this.emojiProviders.add(new ItemsAdderEmojiProvider());
+            plugin.debug(() -> "ItemsAdderEmojiProvider Enabled");
         }
-        if (Bukkit.getPluginManager().isPluginEnabled("Oraxen")) {
+        if (Bukkit.getPluginManager().getPlugin("Oraxen") != null) {
             try {
                 this.emojiProviders.add(new OraxenEmojiProvider(Bukkit.getPluginManager().getPlugin("Oraxen").getDescription().getVersion().startsWith("1") ? 1 : 2));
             } catch (Exception ignore) {

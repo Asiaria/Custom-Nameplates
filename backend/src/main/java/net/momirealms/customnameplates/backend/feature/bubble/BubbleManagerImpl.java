@@ -304,7 +304,7 @@ public class BubbleManagerImpl implements BubbleManager, ChatListener {
             return;
         }
 
-        String fullText = config.textPrefix() + AdventureHelper.stripTags(message.replace("\\", "\\\\")) + config.textSuffix();
+        String fullText = config.textPrefix().fastCreate(player).render(player) + message.replace("\\", "\\\\") + config.textSuffix().fastCreate(player).render(player);
         int lines = plugin.getAdvanceManager().getLines(fullText, config.lineWidth());
         if (lines > config.maxLines()) return;
         if (lines <= 0) return;

@@ -12,6 +12,7 @@ repositories {
     maven("https://repo.md-5.net/content/groups/public/") // disguise
     maven("https://repo.opencollab.dev/main/") // geyser
     maven("https://maven.enginehub.org/repo/") // worldguard worldedit
+    maven("https://repo.alessiodp.com/releases/") // parties
 }
 
 dependencies {
@@ -28,11 +29,13 @@ dependencies {
     compileOnly(files("libs/carbonchat-paper-3.0.0-beta.27.jar"))
     compileOnly(files("libs/AdvancedChat-1.3.7.jar"))
     compileOnly(files("libs/CMIAPI-9.7.4.1.jar"))
-    compileOnly(files("libs/ChatControl-Red-10.28.3.jar"))
+    compileOnly(files("libs/ChatControl-11.3.1.jar"))
     compileOnly(files("libs/Typewriter.jar"))
     compileOnly("net.william278.huskchat:huskchat-bukkit:3.0.4")
     compileOnly("net.essentialsx:EssentialsX:2.20.1")
     compileOnly("net.essentialsx:EssentialsXChat:2.20.1")
+    compileOnly("com.alessiodp.parties:parties-api:3.2.16")
+    compileOnly("com.alessiodp.parties:parties-bukkit:3.2.16")
 //    compileOnly("com.github.Brikster:Chatty:v2.19.14")
     compileOnly(files("libs/Chatty-3.0.0-SNAPSHOT.jar"))
     // Emoji

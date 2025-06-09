@@ -16,13 +16,13 @@ modules:
   backgrounds: true          # Enable background images for nameplates
   bubbles: true              # Enable bubble text display
   bossbars: true             # Enable bossbars
-  actionbars: true           # Enable actionbars
+  actionbars: false           # Enable actionbars
   images: true               # Enable image displays
 
 # Plugin Integrations: Integrate resource packs and chat plugins with other plugins.
 integrations:
   resource-pack:
-    CraftEngine: false        # Integration with CraftEngine
+    # CraftEngine: false      # Deprecated, please use the `merge-external-folders` feature in CraftEngine
     ItemsAdder: false         # Integration with ItemsAdder
     ItemsAdder-old-method: false # Legacy integration with ItemsAdder
     Oraxen: false             # Integration with Oraxen
@@ -45,6 +45,9 @@ integrations:
 # Resource Pack Generation Settings: Configure resource pack generation behavior.
 resource-pack:
   disable-generation-on-start: false  # Allow resource pack generation at server start
+  supported-version:
+    # You can specify a version like 1.20.1, 1.21.4 or use SERVER_VERSION
+    min: "SERVER_VERSION"
   namespace: "nameplates"             # Namespace for the resource pack
   font: "default"                     # Default font used
   initial-char: '뀁'                  # Starting character for custom fonts (won't affect Korean characters in chat)

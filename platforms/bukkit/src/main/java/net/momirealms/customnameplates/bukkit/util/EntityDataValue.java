@@ -20,6 +20,8 @@ package net.momirealms.customnameplates.bukkit.util;
 import net.momirealms.customnameplates.api.helper.VersionHelper;
 import net.momirealms.customnameplates.common.util.ReflectionUtils;
 
+import java.util.Objects;
+
 public class EntityDataValue {
 
     private static int internalID = 0;
@@ -47,6 +49,7 @@ public class EntityDataValue {
     public static final Object Serializers$OPTIONAL_BLOCK_POS;
     public static final Object Serializers$DIRECTION;
     public static final Object Serializers$OPTIONAL_UUID;
+    public static final Object Serializers$OPTIONAL_LIVING_ENTITY_REFERENCE;
     public static final Object Serializers$OPTIONAL_GLOBAL_POS;
     public static final Object Serializers$COMPOUND_TAG;
     public static final Object Serializers$VILLAGER_DATA;
@@ -81,7 +84,10 @@ public class EntityDataValue {
             Serializers$BLOCK_POS = initSerializersByName("BLOCK_POS");
             Serializers$OPTIONAL_BLOCK_POS = initSerializersByName("OPTIONAL_BLOCK_POS");
             Serializers$DIRECTION = initSerializersByName("DIRECTION");
-            Serializers$OPTIONAL_UUID = initSerializersByName("OPTIONAL_UUID");
+            if (!VersionHelper.isVersionNewerThan1_21_5()) Serializers$OPTIONAL_UUID = initSerializersByName("OPTIONAL_UUID");
+            else Serializers$OPTIONAL_UUID = null;
+            if (VersionHelper.isVersionNewerThan1_21_5()) Serializers$OPTIONAL_LIVING_ENTITY_REFERENCE = initSerializersByName("OPTIONAL_LIVING_ENTITY_REFERENCE");
+            else Serializers$OPTIONAL_LIVING_ENTITY_REFERENCE = null;
             Serializers$OPTIONAL_GLOBAL_POS = initSerializersByName("OPTIONAL_GLOBAL_POS");
             Serializers$COMPOUND_TAG = initSerializersByName("COMPOUND_TAG");
             Serializers$VILLAGER_DATA = initSerializersByName("VILLAGER_DATA");
@@ -103,7 +109,7 @@ public class EntityDataValue {
     }
 
     private static Object initSerializersByName(String name) throws ReflectiveOperationException {
-        return ReflectionUtils.getDeclaredField(Reflections.clazz$EntityDataSerializers, new String[]{fieldsObf[internalID++], name}).get(null);
+        return Objects.requireNonNull(ReflectionUtils.getDeclaredField(Reflections.clazz$EntityDataSerializers, new String[]{fieldsObf[internalID++], name}).get(null));
     }
 
     private EntityDataValue() {
